@@ -1,5 +1,6 @@
 # AirBridge
 
+[![CI](https://github.com/MickeyWzt/airbridge/actions/workflows/ci.yml/badge.svg)](https://github.com/MickeyWzt/airbridge/actions/workflows/ci.yml)
 [![Latest release](https://img.shields.io/github/v/release/MickeyWzt/airbridge?label=release)](https://github.com/MickeyWzt/airbridge/releases/latest)
 [![MIT License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Platforms](https://img.shields.io/badge/platforms-Windows%20%7C%20Android%20%7C%20iOS%20%7C%20macOS-blue)](#platforms)
