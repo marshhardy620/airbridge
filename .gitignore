@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.Python
+.venv/
+venv/
+
+# PyInstaller/build outputs
+build/
+dist/
+*.spec
+
+# Local AirBridge runtime data
+AirBridge-Received/
+
+# Generated source-only/icon draft asset
+assets/airbridge-source.png
+
+# macOS/Xcode user state
+.DS_Store
+DerivedData/
+*.xcuserstate
+xcuserdata/
+
+# IDE/editor
+.idea/
+.vscode/
