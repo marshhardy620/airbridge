@@ -13,7 +13,7 @@ struct AirBridgeMacApp: App {
         .windowStyle(.titleBar)
         .commands {
             CommandGroup(after: .appInfo) {
-                Button("打开接收文件夹") {
+                Button("Open Received Folder") {
                     airBridgeService.openReceivedFolder()
                 }
             }

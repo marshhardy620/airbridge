@@ -163,16 +163,16 @@ public class MainActivity extends Activity {
         root.addView(title);
 
         statusText = new TextView(this);
-        statusText.setText("正在启动...");
+        statusText.setText("Starting...");
         statusText.setTextColor(muted);
         statusText.setTextSize(14);
         statusText.setPadding(0, dp(6), 0, dp(10));
         root.addView(statusText);
 
-        localUrlText = label("本机地址：正在获取", muted, 14);
+        localUrlText = label("Local address: loading", muted, 14);
         root.addView(localUrlText);
 
-        root.addView(sectionTitle("附近设备"));
+        root.addView(sectionTitle("Nearby Devices"));
         peerList = new LinearLayout(this);
         peerList.setOrientation(LinearLayout.VERTICAL);
         root.addView(peerList);
@@ -182,10 +182,10 @@ public class MainActivity extends Activity {
         manualRow.setPadding(0, dp(8), 0, 0);
         manualInput = new EditText(this);
         manualInput.setSingleLine(true);
-        manualInput.setHint("手动添加，例如 10.85.168.94:8765");
+        manualInput.setHint("Add manually, e.g. 10.85.168.94:8765");
         manualInput.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_URI);
         manualRow.addView(manualInput, new LinearLayout.LayoutParams(0, dp(48), 1));
-        Button addButton = actionButton("添加", green);
+        Button addButton = actionButton("Add", green);
         addButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -195,11 +195,11 @@ public class MainActivity extends Activity {
         manualRow.addView(addButton, new LinearLayout.LayoutParams(dp(84), dp(48)));
         root.addView(manualRow);
 
-        root.addView(sectionTitle("发送消息"));
+        root.addView(sectionTitle("Send Message"));
         messageInput = new EditText(this);
         messageInput.setMinLines(3);
         messageInput.setGravity(Gravity.TOP);
-        messageInput.setHint("输入要发送的文字");
+        messageInput.setHint("Type the message to send");
         messageInput.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_MULTI_LINE);
         root.addView(messageInput, new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
@@ -209,7 +209,7 @@ public class MainActivity extends Activity {
         LinearLayout sendRow = new LinearLayout(this);
         sendRow.setOrientation(LinearLayout.HORIZONTAL);
         sendRow.setPadding(0, dp(10), 0, 0);
-        sendMessageButton = actionButton("发送消息", green);
+        sendMessageButton = actionButton("Send Message", green);
         sendMessageButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -219,7 +219,7 @@ public class MainActivity extends Activity {
         });
         sendRow.addView(sendMessageButton, new LinearLayout.LayoutParams(0, dp(48), 1));
 
-        sendFileButton = actionButton("选择文件", Color.rgb(39, 110, 241));
+        sendFileButton = actionButton("Choose File", Color.rgb(39, 110, 241));
         sendFileButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -231,7 +231,7 @@ public class MainActivity extends Activity {
         sendRow.addView(sendFileButton, fileParams);
         root.addView(sendRow);
 
-        root.addView(sectionTitle("接收记录"));
+        root.addView(sectionTitle("Received History"));
         eventList = new LinearLayout(this);
         eventList.setOrientation(LinearLayout.VERTICAL);
         root.addView(eventList);
@@ -251,12 +251,12 @@ public class MainActivity extends Activity {
         if (service == null) {
             return;
         }
-        localUrlText.setText("本机地址：" + service.localUrl());
+        localUrlText.setText("Local address: " + service.localUrl());
 
         peerList.removeAllViews();
         List<Peer> peers = service.peers();
         if (peers.isEmpty()) {
-            peerList.addView(label("还没有发现设备，可以先手动添加 Windows 显示的地址。", Color.rgb(96, 112, 107), 14));
+            peerList.addView(label("No devices found yet. You can manually add the address shown by Windows.", Color.rgb(96, 112, 107), 14));
         } else {
             for (final Peer peer : peers) {
                 Button row = actionButton(peer.name + "\n" + peer.url, peer.id.equals(service.selectedPeerId()) ? Color.rgb(29, 127, 99) : Color.rgb(84, 96, 92));
@@ -284,7 +284,7 @@ public class MainActivity extends Activity {
         eventList.removeAllViews();
         List<TransferEvent> events = service.events();
         if (events.isEmpty()) {
-            eventList.addView(label("暂无消息或文件。", Color.rgb(96, 112, 107), 14));
+            eventList.addView(label("No messages or files yet.", Color.rgb(96, 112, 107), 14));
         } else {
             for (TransferEvent event : events) {
                 eventList.addView(eventRow(event));
@@ -410,7 +410,7 @@ public class MainActivity extends Activity {
                     scanLoop();
                 }
             });
-            status("正在寻找附近设备...");
+            status("Finding nearby devices...");
         }
 
         void stop() {
@@ -457,7 +457,7 @@ public class MainActivity extends Activity {
             selectedPeerId = peerId;
             Peer peer = peers.get(peerId);
             if (peer != null) {
-                status("已选择 " + peer.name);
+                status("Selected " + peer.name);
             }
             changed();
         }
@@ -469,7 +469,7 @@ public class MainActivity extends Activity {
         void addManualPeer(String rawValue) {
             final String value = normalizeUrl(rawValue);
             if (value.length() == 0) {
-                status("请输入对方地址");
+                status("Enter the peer address");
                 return;
             }
             networkPool.execute(new Runnable() {
@@ -479,10 +479,10 @@ public class MainActivity extends Activity {
                         Peer peer = fetchPeer(value, "manual", 1800);
                         upsertPeer(peer);
                         selectedPeerId = peer.id;
-                        status("设备已添加");
+                        status("Device added");
                         changed();
                     } catch (Exception error) {
-                        status("添加失败：" + error.getMessage());
+                        status("Add failed: " + error.getMessage());
                     }
                 }
             });
@@ -491,12 +491,12 @@ public class MainActivity extends Activity {
         void sendMessage(final String text) {
             final Peer peer = selectedPeer();
             if (peer == null) {
-                status("请先选择一个设备");
+                status("Select a device first");
                 return;
             }
             final String clean = text == null ? "" : text.trim();
             if (clean.length() == 0) {
-                status("请输入消息内容");
+                status("Enter a message first");
                 return;
             }
             networkPool.execute(new Runnable() {
@@ -510,9 +510,9 @@ public class MainActivity extends Activity {
                         payload.put("createdAt", nowMs());
                         postJson(peer, "/api/inbox/message", payload);
                         addEvent(new TransferEvent("sent", peer.name, "message", clean, "", 0));
-                        status("消息已发送");
+                        status("Message sent");
                     } catch (Exception error) {
-                        status("消息发送失败：" + error.getMessage());
+                        status("Message send failed: " + error.getMessage());
                     }
                 }
             });
@@ -521,7 +521,7 @@ public class MainActivity extends Activity {
         void sendFiles(final List<Uri> uris) {
             final Peer peer = selectedPeer();
             if (peer == null) {
-                status("请先选择一个设备");
+                status("Select a device first");
                 return;
             }
             for (final Uri uri : uris) {
@@ -547,7 +547,7 @@ public class MainActivity extends Activity {
             } catch (SocketTimeoutException ignored) {
             } catch (IOException error) {
                 if (running) {
-                    status("HTTP 服务启动失败：" + error.getMessage());
+                    status("HTTP service failed to start: " + error.getMessage());
                 }
             }
         }
@@ -574,7 +574,7 @@ public class MainActivity extends Activity {
                 discoverySocket.setBroadcast(true);
                 discoverySocket.bind(new InetSocketAddress(DISCOVERY_PORT));
             } catch (IOException error) {
-                status("发现服务启动失败：" + error.getMessage());
+                status("Discovery service failed to start: " + error.getMessage());
                 return;
             }
 
@@ -787,7 +787,7 @@ public class MainActivity extends Activity {
                 long sentBytes;
                 try (InputStream input = context.getContentResolver().openInputStream(uri)) {
                     if (input == null) {
-                        throw new IOException("无法读取文件");
+                        throw new IOException("Unable to read file");
                     }
                     sentBytes = copy(input, body);
                 }
@@ -804,10 +804,10 @@ public class MainActivity extends Activity {
                     throw new IOException(readString(conn.getErrorStream()));
                 }
                 addEvent(new TransferEvent("sent", peer.name, "file", "", filename, sentBytes));
-                status("文件已发送：" + filename);
+                status("File sent: " + filename);
                 conn.disconnect();
             } catch (Exception error) {
-                status("文件发送失败：" + error.getMessage());
+                status("File send failed: " + error.getMessage());
             }
         }
 
@@ -907,7 +907,7 @@ public class MainActivity extends Activity {
             String fromName = payload.optString("fromName", payload.optString("from_name", "Nearby device"));
             String text = payload.optString("text", "");
             addEvent(new TransferEvent("received", fromName, "message", text, "", 0));
-            status("收到 " + fromName + " 的消息");
+            status("Received message from " + fromName + "");
         }
 
         private JSONObject receiveFile(MultipartUpload upload) throws IOException, JSONException {
@@ -918,7 +918,7 @@ public class MainActivity extends Activity {
             TransferEvent event = new TransferEvent("received", upload.fromName, "file", "", saved.getName(), upload.fileData.length);
             addEvent(event);
             receivedFiles.put(event.id, saved);
-            status("收到文件：" + saved.getName());
+            status("Received file: " + saved.getName());
 
             JSONObject response = new JSONObject();
             response.put("ok", true);
@@ -1295,12 +1295,12 @@ public class MainActivity extends Activity {
         }
 
         String summary() {
-            String arrow = "sent".equals(direction) ? "发给 " : "收到 ";
+            String arrow = "sent".equals(direction) ? "Sent to " : "Received message from ";
             String time = new SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(new Date(createdAt));
             if ("message".equals(kind)) {
                 return time + "  " + arrow + peerName + "：\n" + text;
             }
-            return time + "  " + arrow + peerName + " 的文件：\n" + filename + " (" + formatBytes(size) + ")";
+            return time + "  " + arrow + peerName + " file: \n" + filename + " (" + formatBytes(size) + ")";
         }
 
         private String formatBytes(long value) {

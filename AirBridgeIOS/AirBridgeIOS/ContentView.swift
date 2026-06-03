@@ -19,7 +19,7 @@ struct ContentView: View {
                 case .success(let urls):
                     await service.sendFiles(urls)
                 case .failure(let error):
-                    service.statusText = "选择文件失败：\(error.localizedDescription)"
+                    service.statusText = "File selection failed: \(error.localizedDescription)"
                 }
             }
         }
@@ -38,12 +38,12 @@ struct ContentView: View {
                 }
                 .padding(.vertical, 4)
             } header: {
-                Text("本机")
+                Text("This Device")
             }
 
             Section {
                 if service.devices.isEmpty {
-                    ContentUnavailableView("暂无设备", systemImage: "dot.radiowaves.left.and.right", description: Text("让 Windows 版 AirBridge 和这台设备连接同一个 Wi-Fi。"))
+                    ContentUnavailableView("No Devices", systemImage: "dot.radiowaves.left.and.right", description: Text("Connect Windows AirBridge and this device to the same Wi-Fi."))
                 } else {
                     ForEach(service.devices) { peer in
                         Button {
@@ -70,14 +70,14 @@ struct ContentView: View {
                     }
                 }
             } header: {
-                Text("附近设备")
+                Text("Nearby Devices")
             }
 
-            Section("手动添加") {
-                TextField("例如 192.168.1.8:8765", text: $manualAddress)
+            Section("Add Manually") {
+                TextField("e.g. 192.168.1.8:8765", text: $manualAddress)
                     .textInputAutocapitalization(.never)
                     .keyboardType(.URL)
-                Button("添加设备") {
+                Button("Add Device") {
                     Task {
                         await service.addManualPeer(manualAddress)
                         manualAddress = ""
@@ -96,7 +96,7 @@ struct ContentView: View {
                 ScrollView {
                     LazyVStack(spacing: 12) {
                         if service.events.isEmpty {
-                            ContentUnavailableView("还没有传输记录", systemImage: "paperplane", description: Text("选择设备后可以发送消息或文件。"))
+                            ContentUnavailableView("No transfer history yet", systemImage: "paperplane", description: Text("Select a device to send messages or files."))
                                 .padding(.top, 80)
                         } else {
                             ForEach(service.events) { event in
@@ -118,7 +118,7 @@ struct ContentView: View {
             Divider()
             composer
         }
-        .navigationTitle(service.selectedPeer?.name ?? "选择设备")
+        .navigationTitle(service.selectedPeer?.name ?? "Select Device")
         .navigationBarTitleDisplayMode(.inline)
     }
 
@@ -128,7 +128,7 @@ struct ContentView: View {
                 .font(.title2)
                 .foregroundStyle(.green)
             VStack(alignment: .leading, spacing: 3) {
-                Text(service.selectedPeer?.name ?? "未选择设备")
+                Text(service.selectedPeer?.name ?? "No device selected")
                     .font(.headline)
                 Text(service.statusText)
                     .font(.caption)
@@ -138,7 +138,7 @@ struct ContentView: View {
             Button {
                 service.openReceivedFolder()
             } label: {
-                Label("接收文件", systemImage: "folder")
+                Label("Received Files", systemImage: "folder")
             }
             .labelStyle(.iconOnly)
         }
@@ -148,7 +148,7 @@ struct ContentView: View {
     private var composer: some View {
         VStack(spacing: 10) {
             HStack(alignment: .bottom, spacing: 10) {
-                TextField("输入消息...", text: $messageText, axis: .vertical)
+                TextField("Type a message...", text: $messageText, axis: .vertical)
                     .lineLimit(1...4)
                     .textFieldStyle(.roundedBorder)
                 Button {
@@ -165,11 +165,11 @@ struct ContentView: View {
                 Button {
                     isImportingFiles = true
                 } label: {
-                    Label("选择文件", systemImage: "paperclip")
+                    Label("Choose Files", systemImage: "paperclip")
                 }
                 .buttonStyle(.bordered)
                 Spacer()
-                Text("Windows 与 iPhone/iPad 需在同一 Wi-Fi")
+                Text("Windows and iPhone/iPad must be on the same Wi-Fi")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
@@ -188,7 +188,7 @@ private struct EventBubble: View {
                 Spacer(minLength: 50)
             }
             VStack(alignment: .leading, spacing: 6) {
-                Text("\(event.direction == .sent ? "我" : event.peerName) · \(event.createdAt.airBridgeShortTime)")
+                Text("\(event.direction == .sent ? "Me" : event.peerName) · \(event.createdAt.airBridgeShortTime)")
                     .font(.caption)
                     .foregroundStyle(.secondary)
                 payload

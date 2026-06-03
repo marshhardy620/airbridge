@@ -8,7 +8,7 @@ final class AirBridgeService: ObservableObject {
     @Published private(set) var devices: [NearbyDevice] = []
     @Published private(set) var events: [TransferEvent] = []
     @Published var selectedPeerID: String?
-    @Published var statusText = "正在启动 AirBridge..."
+    @Published var statusText = "Starting AirBridge..."
 
     private let appName = "AirBridge"
     private let appVersion = "0.1.0"
@@ -61,9 +61,9 @@ final class AirBridgeService: ObservableObject {
             httpServer = try LocalHTTPServer(startingAt: preferredHTTPPort, service: self)
             try httpServer?.start()
             startDiscovery()
-            statusText = "正在寻找附近设备..."
+            statusText = "Finding nearby devices..."
         } catch {
-            statusText = "启动失败：\(error.localizedDescription)"
+            statusText = "Startup failed: \(error.localizedDescription)"
         }
     }
 
@@ -80,7 +80,7 @@ final class AirBridgeService: ObservableObject {
 
     func select(_ peer: NearbyDevice) {
         selectedPeerID = peer.id
-        statusText = "已选择 \(peer.name)"
+        statusText = "Selected \(peer.name)"
     }
 
     func addManualPeer(_ rawText: String) async {
@@ -90,7 +90,7 @@ final class AirBridgeService: ObservableObject {
             value = "http://\(value)"
         }
         guard let url = URL(string: value), let host = url.host else {
-            statusText = "地址无效"
+            statusText = "Invalid address"
             return
         }
         let port = url.port ?? 80
@@ -109,20 +109,20 @@ final class AirBridgeService: ObservableObject {
             )
             upsert(peer)
             selectedPeerID = peer.id
-            statusText = "设备已添加"
+            statusText = "Device added"
         } catch {
-            statusText = "添加失败：\(error.localizedDescription)"
+            statusText = "Add failed: \(error.localizedDescription)"
         }
     }
 
     func sendMessage(_ text: String) async {
         guard let peer = selectedPeer else {
-            statusText = "请先选择一个 Windows 或 Apple 设备"
+            statusText = "Select a Windows or Apple device first"
             return
         }
         let cleanText = text.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !cleanText.isEmpty else {
-            statusText = "请输入消息内容"
+            statusText = "Enter a message first"
             return
         }
         do {
@@ -139,15 +139,15 @@ final class AirBridgeService: ObservableObject {
             let (_, response) = try await URLSession.shared.data(for: request)
             try Self.validate(response)
             events.append(TransferEvent(peerName: peer.name, direction: .sent, payload: .message(cleanText)))
-            statusText = "消息已发送"
+            statusText = "Message sent"
         } catch {
-            statusText = "消息发送失败：\(error.localizedDescription)"
+            statusText = "Message send failed: \(error.localizedDescription)"
         }
     }
 
     func sendFiles(_ urls: [URL]) async {
         guard let peer = selectedPeer else {
-            statusText = "请先选择一个 Windows 或 Apple 设备"
+            statusText = "Select a Windows or Apple device first"
             return
         }
         for url in urls {
@@ -156,12 +156,12 @@ final class AirBridgeService: ObservableObject {
     }
 
     func openReceivedFolder() {
-        statusText = "iOS 文件保存在“文件”App 的 AirBridge Received 中"
+        statusText = "iOS files are saved in the Files app under AirBridge Received"
     }
 
     func receiveMessage(fromName: String, text: String) {
         events.append(TransferEvent(peerName: fromName, direction: .received, payload: .message(text)))
-        statusText = "收到 \(fromName) 的消息"
+        statusText = "Received message from \(fromName)"
     }
 
     func receiveFile(fromName: String, filename: String, data: Data) throws {
@@ -174,7 +174,7 @@ final class AirBridgeService: ObservableObject {
                 payload: .file(name: destination.lastPathComponent, url: destination, size: Int64(data.count))
             )
         )
-        statusText = "文件已保存"
+        statusText = "File saved"
     }
 
     func statePayload() -> AirBridgeStatePayload {
@@ -232,9 +232,9 @@ final class AirBridgeService: ObservableObject {
                     payload: .file(name: url.lastPathComponent, url: url, size: Int64(data.count))
                 )
             )
-            statusText = "文件已发送"
+            statusText = "File sent"
         } catch {
-            statusText = "文件发送失败：\(error.localizedDescription)"
+            statusText = "File send failed: \(error.localizedDescription)"
         }
     }
 
@@ -351,7 +351,7 @@ final class AirBridgeService: ObservableObject {
             selectedPeerID = devices.first?.id
         }
         if devices.isEmpty {
-            statusText = "正在寻找附近设备..."
+            statusText = "Finding nearby devices..."
         }
     }
 

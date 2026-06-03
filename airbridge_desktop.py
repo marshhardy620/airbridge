@@ -143,9 +143,9 @@ class DropPanel(QFrame):
         layout = QVBoxLayout(self)
         layout.setContentsMargins(18, 18, 18, 18)
         layout.setSpacing(6)
-        title = QLabel("拖拽文件到这里")
+        title = QLabel("Drop files here")
         title.setObjectName("dropTitle")
-        hint = QLabel("或点击下方按钮选择文件发送给当前设备")
+        hint = QLabel("Or click the button below to choose files for the current device")
         hint.setObjectName("muted")
         layout.addWidget(title)
         layout.addWidget(hint)
@@ -236,7 +236,7 @@ class AirBridgeDesktop(QMainWindow):
         title_box = QVBoxLayout()
         title = QLabel("AirBridge")
         title.setObjectName("brandTitle")
-        subtitle = QLabel("无需登录的局域网投送")
+        subtitle = QLabel("LAN transfer without login")
         subtitle.setObjectName("muted")
         title_box.addWidget(title)
         title_box.addWidget(subtitle)
@@ -250,11 +250,11 @@ class AirBridgeDesktop(QMainWindow):
         self.local_url.setObjectName("localUrl")
         layout.addWidget(self.local_url)
 
-        copy_btn = QPushButton("复制本机地址")
+        copy_btn = QPushButton("Copy Local Address")
         copy_btn.clicked.connect(self.copy_local_url)
         layout.addWidget(copy_btn)
 
-        heading = QLabel("附近设备")
+        heading = QLabel("Nearby Devices")
         heading.setObjectName("sectionTitle")
         layout.addWidget(heading)
 
@@ -263,13 +263,13 @@ class AirBridgeDesktop(QMainWindow):
         self.peer_list.setIconSize(QSize(28, 28))
         layout.addWidget(self.peer_list, 1)
 
-        manual_title = QLabel("手动添加")
+        manual_title = QLabel("Add Manually")
         manual_title.setObjectName("sectionTitle")
         layout.addWidget(manual_title)
         self.manual_input = QLineEdit()
-        self.manual_input.setPlaceholderText("例如 192.168.1.8:8765")
+        self.manual_input.setPlaceholderText("e.g. 192.168.1.8:8765")
         layout.addWidget(self.manual_input)
-        self.add_peer_btn = QPushButton("添加设备")
+        self.add_peer_btn = QPushButton("Add Device")
         layout.addWidget(self.add_peer_btn)
 
         return panel
@@ -282,16 +282,16 @@ class AirBridgeDesktop(QMainWindow):
         layout.setSpacing(14)
 
         top = QHBoxLayout()
-        self.peer_title = QLabel("选择一个设备")
+        self.peer_title = QLabel("Select a Device")
         self.peer_title.setObjectName("chatTitle")
-        self.peer_subtitle = QLabel("正在通过广播和邻近网段扫描寻找设备")
+        self.peer_subtitle = QLabel("Scanning with broadcast and nearby network segments")
         self.peer_subtitle.setObjectName("muted")
         title_box = QVBoxLayout()
         title_box.addWidget(self.peer_title)
         title_box.addWidget(self.peer_subtitle)
         top.addLayout(title_box)
         top.addStretch()
-        self.refresh_btn = QPushButton("刷新")
+        self.refresh_btn = QPushButton("Refresh")
         top.addWidget(self.refresh_btn)
         layout.addLayout(top)
 
@@ -312,20 +312,20 @@ class AirBridgeDesktop(QMainWindow):
         input_row = QHBoxLayout()
         self.message_input = QPlainTextEdit()
         self.message_input.setObjectName("messageInput")
-        self.message_input.setPlaceholderText("输入消息...")
+        self.message_input.setPlaceholderText("Type a message...")
         self.message_input.setFixedHeight(84)
         input_row.addWidget(self.message_input, 1)
         buttons = QVBoxLayout()
-        self.send_btn = QPushButton("发送")
+        self.send_btn = QPushButton("Send")
         self.send_btn.setObjectName("primaryButton")
-        self.file_btn = QPushButton("发送文件")
+        self.file_btn = QPushButton("Send File")
         buttons.addWidget(self.send_btn)
         buttons.addWidget(self.file_btn)
         buttons.addStretch()
         input_row.addLayout(buttons)
         layout.addLayout(input_row)
 
-        self.status_label = QLabel("就绪")
+        self.status_label = QLabel("Ready")
         self.status_label.setObjectName("status")
         layout.addWidget(self.status_label)
         return panel
@@ -338,24 +338,24 @@ class AirBridgeDesktop(QMainWindow):
         layout.setContentsMargins(18, 18, 18, 18)
         layout.setSpacing(14)
 
-        title = QLabel("接收与设置")
+        title = QLabel("Inbox and Settings")
         title.setObjectName("sectionTitle")
         layout.addWidget(title)
 
-        self.received_count = QLabel("还没有收到内容")
+        self.received_count = QLabel("No received items yet")
         self.received_count.setObjectName("muted")
         layout.addWidget(self.received_count)
 
-        open_dir_btn = QPushButton("打开接收文件夹")
+        open_dir_btn = QPushButton("Open Received Folder")
         open_dir_btn.clicked.connect(self.open_received_dir)
         layout.addWidget(open_dir_btn)
 
-        self.update_btn = QPushButton("检查更新")
+        self.update_btn = QPushButton("Check for Updates")
         self.update_btn.clicked.connect(lambda: self.check_for_updates(manual=True))
         layout.addWidget(self.update_btn)
 
         self.network_tip = QLabel(
-            "提示：首次运行时允许 Windows 防火墙的专用网络访问，其他设备才能发现这台电脑。"
+            "Tip: allow Windows Firewall private-network access on first run so other devices can discover this PC."
         )
         self.network_tip.setWordWrap(True)
         self.network_tip.setObjectName("tip")
@@ -388,9 +388,9 @@ class AirBridgeDesktop(QMainWindow):
             return
         self.tray = QSystemTrayIcon(QIcon(str(airbridge.ICON_PATH)), self)
         menu = QMenu()
-        show_action = QAction("显示 AirBridge", self)
+        show_action = QAction("Show AirBridge", self)
         show_action.triggered.connect(self.show_normal)
-        quit_action = QAction("退出", self)
+        quit_action = QAction("Quit", self)
         quit_action.triggered.connect(self.quit_app)
         menu.addAction(show_action)
         menu.addSeparator()
@@ -413,7 +413,7 @@ class AirBridgeDesktop(QMainWindow):
 
     def copy_local_url(self) -> None:
         QApplication.clipboard().setText(self.runtime.state.url)
-        self.set_status("已复制本机地址")
+        self.set_status("Local address copied")
 
     def open_received_dir(self) -> None:
         airbridge.RECEIVED_DIR.mkdir(parents=True, exist_ok=True)
@@ -435,7 +435,7 @@ class AirBridgeDesktop(QMainWindow):
             return
         self.update_check_inflight = True
         if manual:
-            self.set_status("正在检查更新...")
+            self.set_status("Checking for updates...")
         threading.Thread(target=self._check_for_updates_worker, args=(manual,), daemon=True).start()
 
     def _check_for_updates_worker(self, manual: bool) -> None:
@@ -444,10 +444,10 @@ class AirBridgeDesktop(QMainWindow):
             if info:
                 self.signals.update_available.emit(info)
             elif manual:
-                self.signals.status.emit("当前已经是最新版本")
+                self.signals.status.emit("Already up to date")
         except Exception as exc:  # noqa: BLE001
             if manual:
-                self.signals.error.emit(f"检查更新失败：{exc}")
+                self.signals.error.emit(f"Update check failed: {exc}")
         finally:
             self.update_check_inflight = False
 
@@ -477,7 +477,7 @@ class AirBridgeDesktop(QMainWindow):
                 exe_url = str(asset.get("browser_download_url") or "")
                 break
         if not exe_url:
-            raise RuntimeError("最新版本没有 AirBridge.exe 下载文件")
+            raise RuntimeError("Latest release does not include an AirBridge.exe download asset")
 
         return {
             "tag": tag,
@@ -507,11 +507,11 @@ class AirBridgeDesktop(QMainWindow):
         update = dict(info)  # type: ignore[arg-type]
         result = QMessageBox.question(
             self,
-            "发现新版本",
+            "Update Available",
             (
-                f"发现 AirBridge {update.get('tag')}。\n"
-                f"当前版本：v{airbridge.APP_VERSION}\n\n"
-                "是否现在下载并更新？"
+                f"Found AirBridge {update.get('tag')}。\n"
+                f"Current version: v{airbridge.APP_VERSION}\n\n"
+                "Download and update now?"
             ),
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
             QMessageBox.StandardButton.Yes,
@@ -522,10 +522,10 @@ class AirBridgeDesktop(QMainWindow):
     def download_update(self, info: dict[str, str]) -> None:
         if not getattr(sys, "frozen", False):
             QDesktopServices.openUrl(QUrl(info.get("page_url") or RELEASES_URL))
-            self.set_status("源码运行模式无法自动替换 exe，已打开下载页面")
+            self.set_status("Source-run mode cannot replace the EXE automatically; opened the download page")
             return
         self.signals.busy.emit(True)
-        self.set_status("正在下载更新...")
+        self.set_status("Downloading update...")
         threading.Thread(target=self._download_update_worker, args=(info,), daemon=True).start()
 
     def _download_update_worker(self, info: dict[str, str]) -> None:
@@ -549,7 +549,7 @@ class AirBridgeDesktop(QMainWindow):
             payload["downloaded_path"] = str(exe_path)
             self.signals.update_ready.emit(payload)
         except Exception as exc:  # noqa: BLE001
-            self.signals.error.emit(f"下载更新失败：{exc}")
+            self.signals.error.emit(f"Update download failed: {exc}")
         finally:
             self.signals.busy.emit(False)
 
@@ -557,15 +557,15 @@ class AirBridgeDesktop(QMainWindow):
         update = dict(info)  # type: ignore[arg-type]
         result = QMessageBox.question(
             self,
-            "更新已下载",
-            "更新已下载完成。现在重启并安装新版 AirBridge 吗？",
+            "Update Downloaded",
+            "The update has finished downloading. Restart and install the new AirBridge now?",
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
             QMessageBox.StandardButton.Yes,
         )
         if result == QMessageBox.StandardButton.Yes:
             self.install_update(update["downloaded_path"])
         else:
-            self.set_status("更新已下载，重启安装已取消")
+            self.set_status("Update downloaded; restart/install canceled")
 
     def install_update(self, downloaded_path: str) -> None:
         current_exe = Path(sys.executable).resolve()
@@ -651,8 +651,8 @@ Remove-Item -LiteralPath $MyInvocation.MyCommand.Path -Force -ErrorAction Silent
             self.peer_title.setText(peer.name)
             self.peer_subtitle.setText(f"{peer.host}:{peer.port}")
         else:
-            self.peer_title.setText("选择一个设备")
-            self.peer_subtitle.setText("正在通过广播和邻近网段扫描寻找设备")
+            self.peer_title.setText("Select a Device")
+            self.peer_subtitle.setText("Scanning with broadcast and nearby network segments")
 
         state = self.runtime.state.to_state()
         inbox = state.get("inbox", [])
@@ -668,7 +668,7 @@ Remove-Item -LiteralPath $MyInvocation.MyCommand.Path -Force -ErrorAction Silent
                     self.add_activity(activity)
                     self.notify(activity)
 
-        self.received_count.setText(f"已收到 {len(inbox)} 条内容" if inbox else "还没有收到内容")
+        self.received_count.setText(f"Received {len(inbox)} items" if inbox else "No received items yet")
 
     def inbox_to_activity(self, item: dict) -> dict:
         return {
@@ -698,7 +698,7 @@ Remove-Item -LiteralPath $MyInvocation.MyCommand.Path -Force -ErrorAction Silent
                 widget.deleteLater()
 
         if not self.activities:
-            empty = QLabel("还没有传输记录。选择左侧设备后，可以发送消息或拖拽文件。")
+            empty = QLabel("No transfer history yet. Select a device on the left to send messages or drop files.")
             empty.setObjectName("emptyState")
             empty.setAlignment(Qt.AlignmentFlag.AlignCenter)
             self.activity_layout.addWidget(empty)
@@ -723,7 +723,7 @@ Remove-Item -LiteralPath $MyInvocation.MyCommand.Path -Force -ErrorAction Silent
         bubble_layout.setContentsMargins(12, 10, 12, 10)
         bubble_layout.setSpacing(6)
 
-        who = "我" if activity["direction"] == "out" else activity["peer_name"]
+        who = "Me" if activity["direction"] == "out" else activity["peer_name"]
         meta = QLabel(f"{who} · {fmt_time(activity['created_at'])}")
         meta.setObjectName("bubbleMeta")
         bubble_layout.addWidget(meta)
@@ -734,7 +734,7 @@ Remove-Item -LiteralPath $MyInvocation.MyCommand.Path -Force -ErrorAction Silent
             name.setObjectName("bubbleText")
             bubble_layout.addWidget(name)
             if activity.get("path"):
-                open_btn = QPushButton("打开文件")
+                open_btn = QPushButton("Open File")
                 open_btn.clicked.connect(lambda _=False, p=activity["path"]: self.open_path(p))
                 bubble_layout.addWidget(open_btn)
         else:
@@ -757,16 +757,16 @@ Remove-Item -LiteralPath $MyInvocation.MyCommand.Path -Force -ErrorAction Silent
         if target.exists():
             QDesktopServices.openUrl(QUrl.fromLocalFile(str(target)))
         else:
-            self.show_error("文件不存在，可能已经被移动或删除。")
+            self.show_error("File does not exist. It may have been moved or deleted.")
 
     def notify(self, activity: dict) -> None:
         if not self.tray:
             return
         if activity["kind"] == "file":
-            body = f'{activity["peer_name"]} 发来文件：{activity["filename"]}'
+            body = f'{activity["peer_name"]} sent a file: {activity["filename"]}'
         else:
             body = f'{activity["peer_name"]}: {activity.get("text", "")[:60]}'
-        self.tray.showMessage("AirBridge 收到新内容", body, QSystemTrayIcon.MessageIcon.Information, 3500)
+        self.tray.showMessage("AirBridge Received New Content", body, QSystemTrayIcon.MessageIcon.Information, 3500)
 
     def on_peer_changed(self, current: QListWidgetItem | None, previous: QListWidgetItem | None) -> None:
         if current is None:
@@ -779,14 +779,14 @@ Remove-Item -LiteralPath $MyInvocation.MyCommand.Path -Force -ErrorAction Silent
         peer = self.current_peer()
         text = self.message_input.toPlainText().strip()
         if not peer:
-            self.show_error("请先选择一个附近设备。")
+            self.show_error("Select a nearby device first.")
             return
         if not text:
-            self.set_status("请输入消息内容")
+            self.set_status("Enter a message first")
             return
         self.message_input.clear()
         self.signals.busy.emit(True)
-        self.set_status("正在发送消息...")
+        self.set_status("Sending message...")
         threading.Thread(target=self._send_message_worker, args=(peer, text), daemon=True).start()
 
     def _send_message_worker(self, peer: airbridge.Peer, text: str) -> None:
@@ -812,27 +812,27 @@ Remove-Item -LiteralPath $MyInvocation.MyCommand.Path -Force -ErrorAction Silent
                     "text": text,
                 }
             )
-            self.signals.status.emit("消息已发送")
+            self.signals.status.emit("Message sent")
         except Exception as exc:  # noqa: BLE001
-            self.signals.error.emit(f"发送失败：{exc}")
+            self.signals.error.emit(f"Send failed: {exc}")
         finally:
             self.signals.busy.emit(False)
 
     def pick_files(self) -> None:
-        paths, _ = QFileDialog.getOpenFileNames(self, "选择要发送的文件")
+        paths, _ = QFileDialog.getOpenFileNames(self, "Select Files to Send")
         if paths:
             self.send_files(paths)
 
     def send_files(self, paths: list[str]) -> None:
         peer = self.current_peer()
         if not peer:
-            self.show_error("请先选择一个附近设备。")
+            self.show_error("Select a nearby device first.")
             return
         clean_paths = [str(Path(path)) for path in paths if Path(path).is_file()]
         if not clean_paths:
             return
         self.signals.busy.emit(True)
-        self.set_status(f"正在发送 {len(clean_paths)} 个文件...")
+        self.set_status(f"Sending {len(clean_paths)} files...")
         threading.Thread(target=self._send_files_worker, args=(peer, clean_paths), daemon=True).start()
 
     def _send_files_worker(self, peer: airbridge.Peer, paths: list[str]) -> None:
@@ -841,7 +841,7 @@ Remove-Item -LiteralPath $MyInvocation.MyCommand.Path -Force -ErrorAction Silent
                 path = Path(file_path)
                 size = path.stat().st_size
                 if size > airbridge.MAX_UPLOAD_BYTES:
-                    raise RuntimeError(f"{path.name} 超过 1GB 限制")
+                    raise RuntimeError(f"{path.name} exceeds the 1 GB limit")
                 data = path.read_bytes()
                 airbridge.post_multipart(
                     peer.host,
@@ -869,9 +869,9 @@ Remove-Item -LiteralPath $MyInvocation.MyCommand.Path -Force -ErrorAction Silent
                         "path": str(path),
                     }
                 )
-            self.signals.status.emit("文件已发送")
+            self.signals.status.emit("File sent")
         except Exception as exc:  # noqa: BLE001
-            self.signals.error.emit(f"发送失败：{exc}")
+            self.signals.error.emit(f"Send failed: {exc}")
         finally:
             self.signals.busy.emit(False)
 
@@ -880,7 +880,7 @@ Remove-Item -LiteralPath $MyInvocation.MyCommand.Path -Force -ErrorAction Silent
         if not raw_url:
             return
         self.signals.busy.emit(True)
-        self.set_status("正在添加设备...")
+        self.set_status("Adding device...")
         threading.Thread(target=self._add_manual_peer_worker, args=(raw_url,), daemon=True).start()
 
     def _add_manual_peer_worker(self, raw_url: str) -> None:
@@ -889,9 +889,9 @@ Remove-Item -LiteralPath $MyInvocation.MyCommand.Path -Force -ErrorAction Silent
                 raw_url = f"http://{raw_url}"
             parsed = urlparse(raw_url)
             if not parsed.hostname:
-                raise RuntimeError("地址无效")
+                raise RuntimeError("Invalid address")
             if parsed.scheme == "https":
-                raise RuntimeError("局域网设备地址请使用 http")
+                raise RuntimeError("Use http for local-network device addresses")
             port = parsed.port or 80
             conn = http.client.HTTPConnection(parsed.hostname, port, timeout=6)
             try:
@@ -915,10 +915,10 @@ Remove-Item -LiteralPath $MyInvocation.MyCommand.Path -Force -ErrorAction Silent
             )
             self.runtime.state.add_peer(peer)
             self.selected_peer_id = peer.id
-            self.signals.status.emit("设备已添加")
+            self.signals.status.emit("Device added")
             self.signals.refresh.emit()
         except Exception as exc:  # noqa: BLE001
-            self.signals.error.emit(f"添加失败：{exc}")
+            self.signals.error.emit(f"Add failed: {exc}")
         finally:
             self.signals.busy.emit(False)
 

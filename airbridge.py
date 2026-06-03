@@ -1026,43 +1026,43 @@ HTML = r"""<!doctype html>
   <div class="app">
     <header>
       <div class="brand"><div class="mark"><img src="/favicon.ico" alt="" aria-hidden="true" /></div><span>AirBridge</span></div>
-      <div class="local-url">本机地址 <code id="localUrl">正在启动...</code></div>
+      <div class="local-url">Local Address <code id="localUrl">Starting...</code></div>
     </header>
     <main>
       <section class="sidebar">
         <div>
-          <h2>附近设备</h2>
-          <p class="hint">AirBridge 会通过广播和邻近网段扫描自动寻找设备。</p>
+          <h2>Nearby Devices</h2>
+          <p class="hint">AirBridge automatically finds devices with broadcast discovery and nearby-segment scanning.</p>
         </div>
         <div id="peerList" class="peer-list"></div>
         <div class="manual">
-          <input id="manualUrl" placeholder="手动地址，如 192.168.1.8:8765" />
-          <button class="secondary" id="addPeerBtn">添加</button>
+          <input id="manualUrl" placeholder="Manual address, e.g. 192.168.1.8:8765" />
+          <button class="secondary" id="addPeerBtn">Add</button>
         </div>
       </section>
 
       <section class="workspace">
         <div class="target">
           <div>
-            <strong id="targetName">请选择设备</strong>
-            <span id="targetUrl">选择附近设备后即可发送消息或文件</span>
+            <strong id="targetName">Select a device</strong>
+            <span id="targetUrl">Select a nearby device to send messages or files</span>
           </div>
-          <button class="secondary" id="refreshBtn">刷新</button>
+          <button class="secondary" id="refreshBtn">Refresh</button>
         </div>
         <div class="send-grid">
           <div class="composer">
-            <h2>发送消息</h2>
-            <textarea id="messageBox" placeholder="输入要发送的文字..."></textarea>
-            <button class="primary" id="sendMessageBtn">发送消息</button>
+            <h2>Send Message</h2>
+            <textarea id="messageBox" placeholder="Type the message to send..."></textarea>
+            <button class="primary" id="sendMessageBtn">Send Message</button>
             <div id="messageStatus" class="status"></div>
           </div>
           <div class="drop">
-            <h2>发送文件</h2>
+            <h2>Send File</h2>
             <label class="dropzone" id="dropzone">
               <input id="fileInput" type="file" multiple hidden />
-              <span><strong>拖拽文件到这里</strong>或点击选择文件</span>
+              <span><strong>Drop files here</strong>or click to choose files</span>
             </label>
-            <button class="primary" id="sendFileBtn">发送文件</button>
+            <button class="primary" id="sendFileBtn">Send File</button>
             <div id="fileStatus" class="status"></div>
           </div>
         </div>
@@ -1070,8 +1070,8 @@ HTML = r"""<!doctype html>
 
       <section class="activity">
         <div>
-          <h2>收到的文件和消息</h2>
-          <p class="hint">文件会保存在程序目录的 AirBridge-Received 文件夹。</p>
+          <h2>Received Files and Messages</h2>
+          <p class="hint">Files are saved in the AirBridge-Received folder next to the program.</p>
         </div>
         <div id="inboxList" class="inbox-list"></div>
       </section>
@@ -1108,13 +1108,13 @@ HTML = r"""<!doctype html>
       const list = $("peerList");
       list.innerHTML = "";
       if (!state.peers.length) {
-        list.innerHTML = '<div class="empty">还没有发现设备。请在另一台设备上启动 AirBridge，或手动输入对方地址。</div>';
+        list.innerHTML = '<div class="empty">No devices found yet. Start AirBridge on another device or enter its address manually.</div>';
         return;
       }
       for (const peer of state.peers) {
         const btn = document.createElement("button");
         btn.className = `peer ${peer.id === selectedPeerId ? "selected" : ""}`;
-        btn.innerHTML = `<strong>${peer.name}</strong><span>${peer.url}${peer.source === "manual" ? " · 手动" : ""}</span>`;
+        btn.innerHTML = `<strong>${peer.name}</strong><span>${peer.url}${peer.source === "manual" ? " · manual" : ""}</span>`;
         btn.onclick = () => { selectedPeerId = peer.id; render(); };
         list.appendChild(btn);
       }
@@ -1122,8 +1122,8 @@ HTML = r"""<!doctype html>
 
     function renderTarget() {
       const peer = state.peers.find(p => p.id === selectedPeerId);
-      $("targetName").textContent = peer ? peer.name : "请选择设备";
-      $("targetUrl").textContent = peer ? peer.url : "选择附近设备后即可发送消息或文件";
+      $("targetName").textContent = peer ? peer.name : "Select a device";
+      $("targetUrl").textContent = peer ? peer.url : "Select a nearby device to send messages or files";
       $("sendMessageBtn").disabled = !peer;
       $("sendFileBtn").disabled = !peer;
     }
@@ -1132,7 +1132,7 @@ HTML = r"""<!doctype html>
       const list = $("inboxList");
       list.innerHTML = "";
       if (!state.inbox.length) {
-        list.innerHTML = '<div class="empty">收到的内容会显示在这里。</div>';
+        list.innerHTML = '<div class="empty">Received items will appear here.</div>';
         return;
       }
       for (const item of state.inbox) {
@@ -1140,13 +1140,13 @@ HTML = r"""<!doctype html>
         div.className = "item";
         if (item.kind === "file") {
           div.innerHTML = `
-            <div class="meta">${fmtTime(item.created_at)} · 来自 ${item.from_name} · ${fmtBytes(item.size)}</div>
+            <div class="meta">${fmtTime(item.created_at)} · From ${item.from_name} · ${fmtBytes(item.size)}</div>
             <div class="file-row">
               <a href="${item.download_url}">${item.filename}</a>
             </div>`;
         } else {
           div.innerHTML = `
-            <div class="meta">${fmtTime(item.created_at)} · 来自 ${item.from_name}</div>
+            <div class="meta">${fmtTime(item.created_at)} · From ${item.from_name}</div>
             <div class="text">${escapeHtml(item.text)}</div>`;
         }
         list.appendChild(div);
@@ -1170,33 +1170,33 @@ HTML = r"""<!doctype html>
 
     async function sendMessage() {
       const text = $("messageBox").value.trim();
-      if (!text) return setStatus("messageStatus", "请输入消息内容。", "error");
-      setStatus("messageStatus", "正在发送...");
+      if (!text) return setStatus("messageStatus", "Enter a message first.", "error");
+      setStatus("messageStatus", "Sending...");
       const res = await fetch("/api/send-message", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ peerId: selectedPeerId, text })
       });
       const data = await res.json();
-      if (!data.ok) return setStatus("messageStatus", data.error || "发送失败。", "error");
+      if (!data.ok) return setStatus("messageStatus", data.error || "Send failed.", "error");
       $("messageBox").value = "";
-      setStatus("messageStatus", "消息已发送。", "ok");
+      setStatus("messageStatus", "Message sent.", "ok");
     }
 
     async function sendFiles() {
-      if (!selectedFiles.length) return setStatus("fileStatus", "请选择文件。", "error");
+      if (!selectedFiles.length) return setStatus("fileStatus", "Select a file first.", "error");
       for (const file of selectedFiles) {
-        setStatus("fileStatus", `正在发送 ${file.name}...`);
+        setStatus("fileStatus", `Sending ${file.name}...`);
         const fd = new FormData();
         fd.append("peer_id", selectedPeerId);
         fd.append("file", file);
         const res = await fetch("/api/send-file", { method: "POST", body: fd });
         const data = await res.json();
-        if (!data.ok) return setStatus("fileStatus", data.error || "发送失败。", "error");
+        if (!data.ok) return setStatus("fileStatus", data.error || "Send failed.", "error");
       }
       selectedFiles = [];
       $("fileInput").value = "";
-      setStatus("fileStatus", "文件已发送。", "ok");
+      setStatus("fileStatus", "File sent.", "ok");
     }
 
     async function addManualPeer() {
@@ -1209,7 +1209,7 @@ HTML = r"""<!doctype html>
       });
       const data = await res.json();
       if (!data.ok) {
-        alert(data.error || "添加失败");
+        alert(data.error || "Add failed");
         return;
       }
       selectedPeerId = data.peer.id;
@@ -1223,7 +1223,7 @@ HTML = r"""<!doctype html>
     $("refreshBtn").onclick = loadState;
     $("fileInput").onchange = (event) => {
       selectedFiles = Array.from(event.target.files || []);
-      setStatus("fileStatus", selectedFiles.length ? `已选择 ${selectedFiles.length} 个文件。` : "");
+      setStatus("fileStatus", selectedFiles.length ? `Selected ${selectedFiles.length} files.` : "");
     };
     $("dropzone").onclick = () => $("fileInput").click();
     $("dropzone").ondragover = (event) => { event.preventDefault(); $("dropzone").classList.add("drag"); };
@@ -1232,7 +1232,7 @@ HTML = r"""<!doctype html>
       event.preventDefault();
       $("dropzone").classList.remove("drag");
       selectedFiles = Array.from(event.dataTransfer.files || []);
-      setStatus("fileStatus", selectedFiles.length ? `已选择 ${selectedFiles.length} 个文件。` : "");
+      setStatus("fileStatus", selectedFiles.length ? `Selected ${selectedFiles.length} files.` : "");
     };
 
     loadState().catch(err => console.error(err));

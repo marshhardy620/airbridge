@@ -21,7 +21,7 @@ struct ContentView: View {
                 case .success(let urls):
                     await service.sendFiles(urls)
                 case .failure(let error):
-                    service.statusText = "选择文件失败：\(error.localizedDescription)"
+                    service.statusText = "File selection failed: \(error.localizedDescription)"
                 }
             }
         }
@@ -29,7 +29,7 @@ struct ContentView: View {
 
     private var deviceList: some View {
         List {
-            Section("本机") {
+            Section("This Device") {
                 VStack(alignment: .leading, spacing: 8) {
                     Label(service.deviceName, systemImage: "macbook.and.iphone")
                         .font(.headline)
@@ -41,12 +41,12 @@ struct ContentView: View {
                 .padding(.vertical, 4)
             }
 
-            Section("附近设备") {
+            Section("Nearby Devices") {
                 if service.devices.isEmpty {
                     VStack(alignment: .leading, spacing: 8) {
-                        Label("暂无设备", systemImage: "dot.radiowaves.left.and.right")
+                        Label("No Devices", systemImage: "dot.radiowaves.left.and.right")
                             .font(.headline)
-                        Text("AirBridge 会用广播和邻近网段扫描寻找 Windows、iOS 和 macOS 设备。")
+                        Text("AirBridge uses broadcast discovery and nearby-segment scanning to find Windows, iOS, and macOS devices.")
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
@@ -78,10 +78,10 @@ struct ContentView: View {
                 }
             }
 
-            Section("手动添加") {
-                TextField("例如 192.168.1.8:8765", text: $manualAddress)
+            Section("Add Manually") {
+                TextField("e.g. 192.168.1.8:8765", text: $manualAddress)
                     .textFieldStyle(.roundedBorder)
-                Button("添加设备") {
+                Button("Add Device") {
                     Task {
                         await service.addManualPeer(manualAddress)
                         manualAddress = ""
@@ -104,9 +104,9 @@ struct ContentView: View {
                                 Image(systemName: "paperplane")
                                     .font(.largeTitle)
                                     .foregroundStyle(.secondary)
-                                Text("还没有传输记录")
+                                Text("No transfer history yet")
                                     .font(.headline)
-                                Text("选择设备后可以发送消息或文件。")
+                                Text("Select a device to send messages or files.")
                                     .font(.subheadline)
                                     .foregroundStyle(.secondary)
                             }
@@ -132,7 +132,7 @@ struct ContentView: View {
             Divider()
             composer
         }
-        .navigationTitle(service.selectedPeer?.name ?? "选择设备")
+        .navigationTitle(service.selectedPeer?.name ?? "Select Device")
     }
 
     private var header: some View {
@@ -141,7 +141,7 @@ struct ContentView: View {
                 .font(.title2)
                 .foregroundStyle(.green)
             VStack(alignment: .leading, spacing: 3) {
-                Text(service.selectedPeer?.name ?? "未选择设备")
+                Text(service.selectedPeer?.name ?? "No device selected")
                     .font(.headline)
                 Text(service.statusText)
                     .font(.caption)
@@ -151,7 +151,7 @@ struct ContentView: View {
             Button {
                 service.openReceivedFolder()
             } label: {
-                Label("打开接收文件夹", systemImage: "folder")
+                Label("Open Received Folder", systemImage: "folder")
             }
         }
         .padding()
@@ -160,7 +160,7 @@ struct ContentView: View {
     private var composer: some View {
         VStack(spacing: 10) {
             HStack(alignment: .bottom, spacing: 10) {
-                TextField("输入消息...", text: $messageText, axis: .vertical)
+                TextField("Type a message...", text: $messageText, axis: .vertical)
                     .lineLimit(1...5)
                     .textFieldStyle(.roundedBorder)
                 Button {
@@ -177,11 +177,11 @@ struct ContentView: View {
                 Button {
                     isImportingFiles = true
                 } label: {
-                    Label("选择文件", systemImage: "paperclip")
+                    Label("Choose Files", systemImage: "paperclip")
                 }
                 .buttonStyle(.bordered)
                 Spacer()
-                Text("Windows、iPhone/iPad、Mac 需在可互访的局域网内")
+                Text("Windows, iPhone/iPad, and Mac must be on a reachable LAN")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
@@ -200,7 +200,7 @@ private struct EventBubble: View {
                 Spacer(minLength: 80)
             }
             VStack(alignment: .leading, spacing: 6) {
-                Text("\(event.direction == .sent ? "我" : event.peerName) · \(event.createdAt.airBridgeShortTime)")
+                Text("\(event.direction == .sent ? "Me" : event.peerName) · \(event.createdAt.airBridgeShortTime)")
                     .font(.caption)
                     .foregroundStyle(.secondary)
                 payload

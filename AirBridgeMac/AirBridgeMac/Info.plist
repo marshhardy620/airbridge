@@ -26,6 +26,6 @@
 		<true/>
 	</dict>
 	<key>NSLocalNetworkUsageDescription</key>
-	<string>AirBridge 需要访问本地网络，用于发现 Windows、iOS 和 macOS 设备并传输文件。</string>
+	<string>AirBridge needs local network access to discover Windows, iOS, and macOS devices and transfer files.</string>
 </dict>
 </plist>
