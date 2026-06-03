@@ -117,6 +117,20 @@ AirBridgeIOS\AirBridgeIOS.xcodeproj
 
 iOS 版使用和 Windows 版一致的局域网协议：UDP 自动发现设备，HTTP 收发消息和文件。因此 Windows 电脑和 iPhone/iPad 在同一个 Wi-Fi 下可以互传。首次运行 iOS App 时，请允许本地网络访问。
 
+## macOS 适配版
+
+Mac 版本在 `AirBridgeMac` 文件夹中，也是额外的原生 SwiftUI 工程。
+
+```text
+AirBridgeMac\AirBridgeMac.xcodeproj
+```
+
+macOS 版同样使用 AirBridge 的 UDP/HTTP 局域网协议，可与 Windows、iPhone/iPad、Mac 互传。收到的文件默认保存到：
+
+```text
+~/Downloads/AirBridge Received
+```
+
 ## 协议
 
 AirBridge 的局域网发现和传输协议见：

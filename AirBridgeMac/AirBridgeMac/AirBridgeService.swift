@@ -1,7 +1,7 @@
+import AppKit
 import Foundation
 import Network
 import SwiftUI
-import UIKit
 import UniformTypeIdentifiers
 
 final class AirBridgeService: ObservableObject {
@@ -15,15 +15,17 @@ final class AirBridgeService: ObservableObject {
     private let discoveryPort: UInt16 = 45678
     private let preferredHTTPPort = 8765
     private let deviceID = UUID().uuidString.replacingOccurrences(of: "-", with: "").prefix(12).description
-    private let queue = DispatchQueue(label: "airbridge.ios.network", qos: .userInitiated)
+    private let queue = DispatchQueue(label: "airbridge.mac.network", qos: .userInitiated)
     private var discoverySocket: Int32 = -1
     private var isRunning = false
     private var broadcastTimer: DispatchSourceTimer?
+    private var scanTimer: DispatchSourceTimer?
     private var httpServer: LocalHTTPServer?
     private let receivedDirectory: URL
 
     init() {
-        receivedDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+        let downloads = FileManager.default.urls(for: .downloadsDirectory, in: .userDomainMask).first
+        receivedDirectory = (downloads ?? FileManager.default.homeDirectoryForCurrentUser)
             .appendingPathComponent("AirBridge Received", isDirectory: true)
         try? FileManager.default.createDirectory(at: receivedDirectory, withIntermediateDirectories: true)
         start()
@@ -34,7 +36,7 @@ final class AirBridgeService: ObservableObject {
     }
 
     var deviceName: String {
-        UIDevice.current.name
+        Host.current().localizedName ?? "Mac-\(deviceID.prefix(4))"
     }
 
     var host: String {
@@ -61,6 +63,7 @@ final class AirBridgeService: ObservableObject {
             httpServer = try LocalHTTPServer(startingAt: preferredHTTPPort, service: self)
             try httpServer?.start()
             startDiscovery()
+            startNearbySubnetScan()
             statusText = "正在寻找附近设备..."
         } catch {
             statusText = "启动失败：\(error.localizedDescription)"
@@ -71,6 +74,8 @@ final class AirBridgeService: ObservableObject {
         isRunning = false
         broadcastTimer?.cancel()
         broadcastTimer = nil
+        scanTimer?.cancel()
+        scanTimer = nil
         if discoverySocket >= 0 {
             close(discoverySocket)
             discoverySocket = -1
@@ -117,7 +122,7 @@ final class AirBridgeService: ObservableObject {
 
     func sendMessage(_ text: String) async {
         guard let peer = selectedPeer else {
-            statusText = "请先选择一个 Windows 或 Apple 设备"
+            statusText = "请先选择一个设备"
             return
         }
         let cleanText = text.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -147,7 +152,7 @@ final class AirBridgeService: ObservableObject {
 
     func sendFiles(_ urls: [URL]) async {
         guard let peer = selectedPeer else {
-            statusText = "请先选择一个 Windows 或 Apple 设备"
+            statusText = "请先选择一个设备"
             return
         }
         for url in urls {
@@ -156,7 +161,7 @@ final class AirBridgeService: ObservableObject {
     }
 
     func openReceivedFolder() {
-        statusText = "iOS 文件保存在“文件”App 的 AirBridge Received 中"
+        NSWorkspace.shared.open(receivedDirectory)
     }
 
     func receiveMessage(fromName: String, text: String) {
@@ -187,7 +192,7 @@ final class AirBridgeService: ObservableObject {
                 host: host,
                 port: port,
                 url: localURL,
-                receivedDir: receivedDirectory.lastPathComponent
+                receivedDir: receivedDirectory.path
             ),
             peers: devices.map {
                 NearbyDevicePayload(
@@ -205,12 +210,6 @@ final class AirBridgeService: ObservableObject {
     }
 
     private func sendFile(_ url: URL, to peer: NearbyDevice) async {
-        let didAccess = url.startAccessingSecurityScopedResource()
-        defer {
-            if didAccess {
-                url.stopAccessingSecurityScopedResource()
-            }
-        }
         do {
             let data = try Data(contentsOf: url)
             let boundary = "airbridge-\(UUID().uuidString)"
@@ -258,6 +257,16 @@ final class AirBridgeService: ObservableObject {
         }
         timer.resume()
         broadcastTimer = timer
+    }
+
+    private func startNearbySubnetScan() {
+        let timer = DispatchSource.makeTimerSource(queue: queue)
+        timer.schedule(deadline: .now() + 3, repeating: .seconds(35))
+        timer.setEventHandler { [weak self] in
+            self?.scanNearbySubnets()
+        }
+        timer.resume()
+        scanTimer = timer
     }
 
     private func configureDiscoverySocket() {
@@ -333,10 +342,46 @@ final class AirBridgeService: ObservableObject {
                 source: "auto",
                 lastSeen: Date()
             )
-            Task { @MainActor in
+            DispatchQueue.main.async {
                 self.upsert(peer)
             }
         }
+    }
+
+    private func scanNearbySubnets() {
+        let hosts = LocalNetwork.nearbyIPv4Hosts(from: host, radius: 1)
+        let ports = [port, 8765, 8766, 8767].uniqued()
+        for targetHost in hosts {
+            for targetPort in ports {
+                probe(host: targetHost, port: targetPort)
+            }
+        }
+    }
+
+    private func probe(host: String, port: Int) {
+        guard let url = URL(string: "http://\(host):\(port)/api/state") else { return }
+        var request = URLRequest(url: url)
+        request.timeoutInterval = 0.45
+        URLSession.shared.dataTask(with: request) { data, _, _ in
+            guard let data,
+                  let payload = try? JSONDecoder().decode(AirBridgeStatePayload.self, from: data),
+                  payload.app == self.appName,
+                  payload.device.id != self.deviceID else {
+                return
+            }
+            let peer = NearbyDevice(
+                id: payload.device.id,
+                name: payload.device.name,
+                host: payload.device.host.hasPrefix("127.") ? host : payload.device.host,
+                port: payload.device.port,
+                url: payload.device.url,
+                source: "scan",
+                lastSeen: Date()
+            )
+            DispatchQueue.main.async {
+                self.upsert(peer)
+            }
+        }.resume()
     }
 
     private func upsert(_ peer: NearbyDevice) {
@@ -370,5 +415,12 @@ final class AirBridgeService: ObservableObject {
             }
         }
         return directory.appendingPathComponent("\(UUID().uuidString)-\(url.lastPathComponent)")
+    }
+}
+
+private extension Array where Element: Hashable {
+    func uniqued() -> [Element] {
+        var seen = Set<Element>()
+        return filter { seen.insert($0).inserted }
     }
 }
