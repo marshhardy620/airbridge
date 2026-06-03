@@ -1,31 +1,31 @@
 # AirBridge iOS
 
-AirBridge iOS 是 Windows 版 AirBridge 的移动端适配，不是 Apple-only 版本。它使用和 Windows 桌面版一致的局域网协议：
+AirBridge iOS is the iPhone/iPad port of the Windows AirBridge app. It is not an Apple-only version; it uses the same local-network protocol as the Windows desktop app:
 
-- UDP `45678` 广播发现设备
-- HTTP `/api/state` 读取设备信息
-- HTTP `/api/inbox/message` 接收消息
-- HTTP `/api/inbox/file` 接收文件
+- UDP `45678` broadcast discovery.
+- HTTP `/api/state` for device information.
+- HTTP `/api/inbox/message` for receiving text messages.
+- HTTP `/api/inbox/file` for receiving files.
 
-这样 iPhone/iPad 和 Windows 电脑在同一个 Wi-Fi 下可以互相发现并传输消息、文件。
+With this shared protocol, an iPhone or iPad and a Windows PC can discover each other and transfer messages and files on the same Wi-Fi network.
 
-## 打开方式
+## Open in Xcode
 
-在 macOS 上用 Xcode 打开：
+On macOS, open the project with Xcode:
 
 ```text
-AirBridgeIOS.xcodeproj
+AirBridgeIOS\AirBridgeIOS.xcodeproj
 ```
 
-然后选择 iPhone 真机或 iOS 模拟器运行。真机互传时，请在首次弹出的本地网络权限提示中选择允许。
+Then select an iPhone device or iOS simulator and run the app. For real-device transfers, allow Local Network access when iOS shows the first-run permission prompt.
 
-## 和 Windows 互传
+## Transfer with Windows
 
-1. Windows 上运行 `dist\AirBridge.exe`
-2. iPhone/iPad 上运行 AirBridge iOS
-3. 两台设备连接同一个 Wi-Fi
-4. 如果没有自动出现，在任意一端手动输入对方显示的地址，例如 `192.168.1.8:8765`
+1. Run `dist\AirBridge.exe` on Windows.
+2. Run AirBridge iOS on the iPhone or iPad.
+3. Connect both devices to the same Wi-Fi.
+4. If automatic discovery does not find the peer, manually enter the address shown by the other device, for example `192.168.1.8:8765`.
 
-## 注意
+## Notes
 
-iOS 对本地网络访问有系统权限限制。第一次运行时必须允许本地网络访问，否则无法发现或连接 Windows 设备。
+iOS restricts local-network access through a system permission prompt. The app must be allowed to access the local network, otherwise it cannot discover or connect to Windows devices.
