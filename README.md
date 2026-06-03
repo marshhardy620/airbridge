@@ -2,6 +2,15 @@
 
 AirBridge is a no-login local-network file and message transfer tool. It works a bit like AirDrop: run AirBridge on two devices connected to the same Wi-Fi or LAN, and they can discover each other, send text, and transfer files without a cloud server.
 
+## Project Links
+
+- [Download the latest Windows build](https://github.com/MickeyWzt/airbridge/releases/latest)
+- [Protocol documentation](docs/PROTOCOL.md)
+- [Support and troubleshooting](SUPPORT.md)
+- [Roadmap](ROADMAP.md)
+- [Contributing guide](CONTRIBUTING.md)
+- [Security policy](SECURITY.md)
+
 ## Download
 
 The latest Windows build is available from GitHub Releases:
