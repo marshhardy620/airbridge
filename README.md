@@ -130,6 +130,28 @@ AirBridgeIOS\AirBridgeIOS.xcodeproj
 
 iOS 版使用和 Windows 版一致的局域网协议：UDP 自动发现设备，HTTP 收发消息和文件。因此 Windows 电脑和 iPhone/iPad 在同一个 Wi-Fi 下可以互传。首次运行 iOS App 时，请允许本地网络访问。
 
+## Android 适配版
+
+Android 版本在 `AirBridgeAndroid` 文件夹中，是额外的原生 Android 工程：
+
+```text
+AirBridgeAndroid
+```
+
+用 Android Studio 打开该文件夹，连接安卓手机并开启 USB 调试后即可运行。Android 版同样使用 AirBridge 的 UDP/HTTP 局域网协议，可与 Windows、iOS、macOS 互传消息和文件。它也会扫描当前网段和相邻网段的 `8765-8767` 端口，适合学校网络里广播不互通的情况。
+
+生成 Android 源码包：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\build_android_zip.ps1
+```
+
+输出文件：
+
+```text
+dist\AirBridgeAndroid-source.zip
+```
+
 ## macOS 适配版
 
 Mac 版本在 `AirBridgeMac` 文件夹中，也是额外的原生 SwiftUI 工程。

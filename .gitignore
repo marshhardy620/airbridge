@@ -23,6 +23,11 @@ DerivedData/
 *.xcuserstate
 xcuserdata/
 
+# Android/Gradle user state
+.gradle/
+**/build/
+local.properties
+
 # IDE/editor
 .idea/
 .vscode/
