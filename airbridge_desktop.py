@@ -12,9 +12,13 @@ import http.client
 import json
 import os
 import socket
+import subprocess
 import sys
+import tempfile
 import threading
 import time
+import urllib.error
+import urllib.request
 import uuid
 from http.server import ThreadingHTTPServer
 from pathlib import Path
@@ -46,6 +50,12 @@ from PySide6.QtWidgets import (
 import airbridge
 
 
+GITHUB_REPO = "MickeyWzt/airbridge"
+LATEST_RELEASE_API = f"https://api.github.com/repos/{GITHUB_REPO}/releases/latest"
+RELEASES_URL = f"https://github.com/{GITHUB_REPO}/releases"
+LATEST_RELEASE_URL = f"{RELEASES_URL}/latest"
+
+
 def fmt_time(ms: int) -> str:
     return time.strftime("%H:%M", time.localtime(ms / 1000))
 
@@ -60,6 +70,29 @@ def fmt_bytes(size: int) -> str:
             return f"{value:.1f} {unit}"
         value /= 1024
     return f"{size} B"
+
+
+def version_tuple(value: str) -> tuple[int, ...]:
+    cleaned = value.strip().lstrip("vV")
+    parts: list[int] = []
+    for part in cleaned.split("."):
+        digits = ""
+        for char in part:
+            if char.isdigit():
+                digits += char
+            else:
+                break
+        parts.append(int(digits or "0"))
+    return tuple(parts or [0])
+
+
+def newer_version(remote: str, current: str) -> bool:
+    remote_parts = list(version_tuple(remote))
+    current_parts = list(version_tuple(current))
+    size = max(len(remote_parts), len(current_parts))
+    remote_parts.extend([0] * (size - len(remote_parts)))
+    current_parts.extend([0] * (size - len(current_parts)))
+    return tuple(remote_parts) > tuple(current_parts)
 
 
 class AirBridgeRuntime:
@@ -96,6 +129,8 @@ class UiSignals(QObject):
     activity = Signal(dict)
     refresh = Signal()
     busy = Signal(bool)
+    update_available = Signal(object)
+    update_ready = Signal(object)
 
 
 class DropPanel(QFrame):
@@ -153,6 +188,7 @@ class AirBridgeDesktop(QMainWindow):
         self.activities: list[dict] = []
         self.activity_widgets: list[QWidget] = []
         self.is_first_refresh = True
+        self.update_check_inflight = False
 
         self.setWindowTitle("AirBridge")
         self.setMinimumSize(1120, 720)
@@ -166,6 +202,7 @@ class AirBridgeDesktop(QMainWindow):
         self.timer.timeout.connect(self.refresh_state)
         self.timer.start(1000)
         self.refresh_state()
+        QTimer.singleShot(2500, lambda: self.check_for_updates(manual=False))
 
     def _build_ui(self) -> None:
         root = QWidget()
@@ -313,6 +350,10 @@ class AirBridgeDesktop(QMainWindow):
         open_dir_btn.clicked.connect(self.open_received_dir)
         layout.addWidget(open_dir_btn)
 
+        self.update_btn = QPushButton("检查更新")
+        self.update_btn.clicked.connect(lambda: self.check_for_updates(manual=True))
+        layout.addWidget(self.update_btn)
+
         self.network_tip = QLabel(
             "提示：首次运行时允许 Windows 防火墙的专用网络访问，其他设备才能发现这台电脑。"
         )
@@ -338,6 +379,8 @@ class AirBridgeDesktop(QMainWindow):
         self.signals.activity.connect(self.add_activity)
         self.signals.refresh.connect(self.refresh_state)
         self.signals.busy.connect(self.set_busy)
+        self.signals.update_available.connect(self.prompt_update)
+        self.signals.update_ready.connect(self.prompt_install_update)
 
     def _setup_tray(self) -> None:
         self.tray: QSystemTrayIcon | None = None
@@ -380,12 +423,201 @@ class AirBridgeDesktop(QMainWindow):
         self.status_label.setText(text)
 
     def set_busy(self, busy: bool) -> None:
-        for widget in (self.send_btn, self.file_btn, self.add_peer_btn, self.refresh_btn):
+        for widget in (self.send_btn, self.file_btn, self.add_peer_btn, self.refresh_btn, self.update_btn):
             widget.setEnabled(not busy)
 
     def show_error(self, text: str) -> None:
         self.set_status(text)
         QMessageBox.warning(self, "AirBridge", text)
+
+    def check_for_updates(self, manual: bool = False) -> None:
+        if self.update_check_inflight:
+            return
+        self.update_check_inflight = True
+        if manual:
+            self.set_status("正在检查更新...")
+        threading.Thread(target=self._check_for_updates_worker, args=(manual,), daemon=True).start()
+
+    def _check_for_updates_worker(self, manual: bool) -> None:
+        try:
+            info = self.fetch_latest_update()
+            if info:
+                self.signals.update_available.emit(info)
+            elif manual:
+                self.signals.status.emit("当前已经是最新版本")
+        except Exception as exc:  # noqa: BLE001
+            if manual:
+                self.signals.error.emit(f"检查更新失败：{exc}")
+        finally:
+            self.update_check_inflight = False
+
+    def fetch_latest_update(self) -> dict[str, str] | None:
+        request = urllib.request.Request(
+            LATEST_RELEASE_API,
+            headers={
+                "User-Agent": f"AirBridge/{airbridge.APP_VERSION}",
+                "Accept": "application/vnd.github+json",
+            },
+        )
+        try:
+            with urllib.request.urlopen(request, timeout=8) as response:
+                payload = json.loads(response.read().decode("utf-8"))
+        except urllib.error.HTTPError as exc:
+            if exc.code in (403, 429):
+                return self.fetch_latest_update_from_redirect()
+            raise
+
+        tag = str(payload.get("tag_name") or "")
+        if not tag or not newer_version(tag, airbridge.APP_VERSION):
+            return None
+
+        exe_url = ""
+        for asset in payload.get("assets") or []:
+            if asset.get("name") == "AirBridge.exe":
+                exe_url = str(asset.get("browser_download_url") or "")
+                break
+        if not exe_url:
+            raise RuntimeError("最新版本没有 AirBridge.exe 下载文件")
+
+        return {
+            "tag": tag,
+            "name": str(payload.get("name") or tag),
+            "page_url": str(payload.get("html_url") or RELEASES_URL),
+            "exe_url": exe_url,
+        }
+
+    def fetch_latest_update_from_redirect(self) -> dict[str, str] | None:
+        request = urllib.request.Request(
+            LATEST_RELEASE_URL,
+            headers={"User-Agent": f"AirBridge/{airbridge.APP_VERSION}"},
+        )
+        with urllib.request.urlopen(request, timeout=8) as response:
+            final_url = response.geturl()
+        tag = final_url.rstrip("/").rsplit("/", 1)[-1]
+        if not tag or tag == "latest" or not newer_version(tag, airbridge.APP_VERSION):
+            return None
+        return {
+            "tag": tag,
+            "name": f"AirBridge {tag}",
+            "page_url": f"{RELEASES_URL}/tag/{tag}",
+            "exe_url": f"https://github.com/{GITHUB_REPO}/releases/download/{tag}/AirBridge.exe",
+        }
+
+    def prompt_update(self, info: object) -> None:
+        update = dict(info)  # type: ignore[arg-type]
+        result = QMessageBox.question(
+            self,
+            "发现新版本",
+            (
+                f"发现 AirBridge {update.get('tag')}。\n"
+                f"当前版本：v{airbridge.APP_VERSION}\n\n"
+                "是否现在下载并更新？"
+            ),
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            QMessageBox.StandardButton.Yes,
+        )
+        if result == QMessageBox.StandardButton.Yes:
+            self.download_update(update)
+
+    def download_update(self, info: dict[str, str]) -> None:
+        if not getattr(sys, "frozen", False):
+            QDesktopServices.openUrl(QUrl(info.get("page_url") or RELEASES_URL))
+            self.set_status("源码运行模式无法自动替换 exe，已打开下载页面")
+            return
+        self.signals.busy.emit(True)
+        self.set_status("正在下载更新...")
+        threading.Thread(target=self._download_update_worker, args=(info,), daemon=True).start()
+
+    def _download_update_worker(self, info: dict[str, str]) -> None:
+        try:
+            temp_dir = Path(tempfile.gettempdir()) / "AirBridgeUpdate"
+            temp_dir.mkdir(parents=True, exist_ok=True)
+            part_path = temp_dir / f"AirBridge-{info['tag']}.exe.part"
+            exe_path = temp_dir / f"AirBridge-{info['tag']}.exe"
+            request = urllib.request.Request(
+                info["exe_url"],
+                headers={"User-Agent": f"AirBridge/{airbridge.APP_VERSION}"},
+            )
+            with urllib.request.urlopen(request, timeout=60) as response, part_path.open("wb") as out:
+                while True:
+                    chunk = response.read(1024 * 512)
+                    if not chunk:
+                        break
+                    out.write(chunk)
+            part_path.replace(exe_path)
+            payload = dict(info)
+            payload["downloaded_path"] = str(exe_path)
+            self.signals.update_ready.emit(payload)
+        except Exception as exc:  # noqa: BLE001
+            self.signals.error.emit(f"下载更新失败：{exc}")
+        finally:
+            self.signals.busy.emit(False)
+
+    def prompt_install_update(self, info: object) -> None:
+        update = dict(info)  # type: ignore[arg-type]
+        result = QMessageBox.question(
+            self,
+            "更新已下载",
+            "更新已下载完成。现在重启并安装新版 AirBridge 吗？",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            QMessageBox.StandardButton.Yes,
+        )
+        if result == QMessageBox.StandardButton.Yes:
+            self.install_update(update["downloaded_path"])
+        else:
+            self.set_status("更新已下载，重启安装已取消")
+
+    def install_update(self, downloaded_path: str) -> None:
+        current_exe = Path(sys.executable).resolve()
+        updater_path = Path(tempfile.gettempdir()) / f"AirBridgeUpdate-{uuid.uuid4().hex}.ps1"
+        script = f"""
+param(
+    [int]$PidToWait,
+    [string]$Target,
+    [string]$Downloaded
+)
+$ErrorActionPreference = "Stop"
+try {{
+    Wait-Process -Id $PidToWait -Timeout 90 -ErrorAction SilentlyContinue
+}} catch {{}}
+Start-Sleep -Milliseconds 700
+$installed = $false
+for ($i = 0; $i -lt 30; $i++) {{
+    try {{
+        Copy-Item -LiteralPath $Downloaded -Destination $Target -Force
+        Unblock-File -LiteralPath $Target -ErrorAction SilentlyContinue
+        $installed = $true
+        break
+    }} catch {{
+        Start-Sleep -Seconds 1
+    }}
+}}
+if ($installed) {{
+    Start-Process -FilePath $Target
+}}
+Remove-Item -LiteralPath $Downloaded -Force -ErrorAction SilentlyContinue
+Remove-Item -LiteralPath $MyInvocation.MyCommand.Path -Force -ErrorAction SilentlyContinue
+"""
+        updater_path.write_text(script, encoding="utf-8")
+        creation_flags = getattr(subprocess, "CREATE_NO_WINDOW", 0)
+        subprocess.Popen(
+            [
+                "powershell",
+                "-NoProfile",
+                "-ExecutionPolicy",
+                "Bypass",
+                "-File",
+                str(updater_path),
+                "-PidToWait",
+                str(os.getpid()),
+                "-Target",
+                str(current_exe),
+                "-Downloaded",
+                downloaded_path,
+            ],
+            creationflags=creation_flags,
+        )
+        self.quit_app()
 
     def current_peer(self) -> airbridge.Peer | None:
         if not self.selected_peer_id:

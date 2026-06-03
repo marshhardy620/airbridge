@@ -18,6 +18,7 @@ https://github.com/MickeyWzt/airbridge/releases
 - 独立 Windows 桌面窗口，不需要打开浏览器
 - 自动发现同一局域网和邻近网段里的 AirBridge 设备
 - 支持手动输入对方地址，适合广播被路由器或防火墙拦截的网络
+- Windows 版支持启动时检查 GitHub Releases 更新，并自动下载替换 exe
 - 支持发送文字消息
 - 支持拖拽或选择文件发送
 - 支持托盘图标和接收通知
@@ -106,6 +107,18 @@ dist\AirBridge.exe
 ```powershell
 python -m pip install pyinstaller PySide6
 ```
+
+## 自动更新
+
+Windows 桌面版从 `v0.1.2` 开始支持自动更新。程序启动后会检查 GitHub 最新 Release：
+
+```text
+https://github.com/MickeyWzt/airbridge/releases/latest
+```
+
+如果发现新版，会弹出更新提示；确认后会下载新的 `AirBridge.exe`，关闭当前程序，替换旧 exe，并自动重新启动。
+
+注意：`v0.1.1` 以及更早的 exe 没有内置更新器，所以旧用户至少需要手动下载一次 `v0.1.2` 或更新版本。之后才可以自动提示和更新。
 
 ## iOS 适配版
 
