@@ -22,6 +22,7 @@ AirBridge is a no-login local-network file and message transfer tool. It works a
 - [Protocol documentation](docs/PROTOCOL.md)
 - [Development guide](docs/DEVELOPMENT.md)
 - [FAQ](docs/FAQ.md)
+- [Examples](docs/EXAMPLES.md)
 - [Changelog](CHANGELOG.md)
 - [Support and troubleshooting](SUPPORT.md)
 - [Roadmap](ROADMAP.md)
