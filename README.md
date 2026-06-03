@@ -1,185 +1,197 @@
 # AirBridge
 
-AirBridge 是一个无需登录的局域网文件和消息传输小工具，使用方式有点像 AirDrop：两台设备在同一 Wi-Fi 或局域网中运行后，就能互相发现、发送文字和文件。
+AirBridge is a no-login local-network file and message transfer tool. It works a bit like AirDrop: run AirBridge on two devices connected to the same Wi-Fi or LAN, and they can discover each other, send text, and transfer files without a cloud server.
 
-## 下载
+## Download
 
-最新 Windows 版可在 GitHub Releases 下载：
+The latest Windows build is available from GitHub Releases:
 
 ```text
-https://github.com/MickeyWzt/airbridge/releases
+https://github.com/MickeyWzt/airbridge/releases/latest
 ```
 
-如果你是从源码运行或二次开发，请继续看下面的说明。
+If you want to run from source or work on the project, continue with the sections below.
 
-## 功能
+## Features
 
-- 无账号、无登录、无云端服务器
-- 独立 Windows 桌面窗口，不需要打开浏览器
-- 自动发现同一局域网和邻近网段里的 AirBridge 设备
-- 支持手动输入对方地址，适合广播被路由器或防火墙拦截的网络
-- Windows 版支持启动时检查 GitHub Releases 更新，并自动下载替换 exe
-- 支持发送文字消息
-- 支持拖拽或选择文件发送
-- 支持托盘图标和接收通知
-- 收到的文件保存在 `AirBridge-Received`
-- 已包含 Windows 应用图标和浏览器页签图标
+- No account, login, or cloud relay server required.
+- Standalone Windows desktop app; no browser is required for the main experience.
+- Automatic peer discovery on the same LAN and nearby network segments.
+- Manual peer entry for networks where broadcast discovery is blocked by routers or firewalls.
+- Windows desktop auto-update support through GitHub Releases.
+- Text message sending.
+- Drag-and-drop or file-picker based file transfer.
+- Tray icon and receive notifications.
+- Received files are saved to `AirBridge-Received` on Windows.
+- Native platform ports for Android, iOS, and macOS using the same local-network protocol.
+- Included Windows app icon and browser favicon assets.
 
-## 运行
+## Run
 
-如果使用已经打包好的程序，直接双击：
+If you are using a packaged Windows build, run:
 
 ```text
 dist\AirBridge.exe
 ```
 
-如果从源码运行，先安装桌面界面依赖：
+To run from source, install the desktop dependencies first:
 
 ```powershell
 python -m pip install -r requirements.txt
 ```
 
-在 Windows 上双击：
+On Windows, double-click:
 
 ```bat
 run_airbridge.bat
 ```
 
-或者在命令行运行：
+Or run from the command line:
 
 ```powershell
 python airbridge_desktop.py
 ```
 
-启动后会打开 AirBridge 桌面窗口，并显示本机地址，例如：
+After startup, AirBridge opens a desktop window and shows the local device address, for example:
 
 ```text
 http://192.168.1.8:8765
 ```
 
-另一台设备也运行 AirBridge 后，通常会自动出现在“附近设备”里。AirBridge 会先用 UDP 广播发现设备，再扫描邻近网段的常用端口，适合 `10.85.167.x` 和 `10.85.168.x` 这种同一网络但广播不互通的情况。如果仍然没有出现，把对方窗口里的本机地址复制到“手动添加”输入框再点击“添加设备”。
+When another device is running AirBridge on the same network, it should usually appear in the nearby devices list automatically. AirBridge first uses UDP broadcast discovery, then scans common ports in nearby network segments. This helps on networks where devices are technically on the same larger network but broadcast traffic does not cross segments, such as `10.85.167.x` and `10.85.168.x`.
 
-增强发现默认扫描当前网段和前后相邻网段的 `8765-8767` 端口。可以用环境变量调整：
+If a device still does not appear, copy the other device's local address into the manual peer entry field and add it manually.
+
+Enhanced discovery scans the current network segment and adjacent segments on ports `8765-8767` by default. You can tune this behavior with environment variables:
 
 ```powershell
 $env:AIRBRIDGE_SCAN_RADIUS="2"
 $env:AIRBRIDGE_SCAN_PORTS="8765,8766,8767,8768"
 ```
 
-仍然可以运行浏览器兼容版：
+The browser-compatible version is still available:
 
 ```powershell
 python airbridge.py
 ```
 
-## 打包成下载包
+## Build a Distributable Zip
 
-生成可分发 zip：
+Generate a distributable zip package:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\build_zip.ps1
 ```
 
-输出文件：
+Output:
 
 ```text
 dist\AirBridge.zip
 ```
 
-## 打包成 exe
+## Build a Windows EXE
 
-如果已经安装 PyInstaller，可以运行：
+If PyInstaller is installed, run:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\build_exe.ps1
 ```
 
-输出文件：
+Output:
 
 ```text
 dist\AirBridge.exe
 ```
 
-打包时会使用 `airbridge_desktop.py` 作为桌面应用入口，并使用 `assets\airbridge.ico` 作为 exe 图标。
+The build uses `airbridge_desktop.py` as the desktop app entry point and `assets\airbridge.ico` as the EXE icon.
 
-如果提示没有 PyInstaller，可先安装：
+If PyInstaller is missing, install the build dependencies first:
 
 ```powershell
 python -m pip install pyinstaller PySide6
 ```
 
-## 自动更新
+## Auto-Update
 
-Windows 桌面版从 `v0.1.2` 开始支持自动更新。程序启动后会检查 GitHub 最新 Release：
+The Windows desktop app supports auto-update starting with `v0.1.2`. On startup, it checks the latest GitHub Release:
 
 ```text
 https://github.com/MickeyWzt/airbridge/releases/latest
 ```
 
-如果发现新版，会弹出更新提示；确认后会下载新的 `AirBridge.exe`，关闭当前程序，替换旧 exe，并自动重新启动。
+When a newer version is available, the app prompts the user, downloads the new `AirBridge.exe`, exits the current process, replaces the old executable, and restarts automatically.
 
-注意：`v0.1.1` 以及更早的 exe 没有内置更新器，所以旧用户至少需要手动下载一次 `v0.1.2` 或更新版本。之后才可以自动提示和更新。
+Note: `v0.1.1` and earlier builds do not include the updater. Users on those versions need to manually download `v0.1.2` or newer once before future updates can be prompted automatically.
 
-## iOS 适配版
+## iOS Port
 
-iPhone/iPad 版本在 `AirBridgeIOS` 文件夹中，是额外的原生 SwiftUI 工程，不会替换 Windows 桌面版。
+The iPhone/iPad version lives in the `AirBridgeIOS` folder as a separate native SwiftUI project:
 
 ```text
 AirBridgeIOS\AirBridgeIOS.xcodeproj
 ```
 
-iOS 版使用和 Windows 版一致的局域网协议：UDP 自动发现设备，HTTP 收发消息和文件。因此 Windows 电脑和 iPhone/iPad 在同一个 Wi-Fi 下可以互传。首次运行 iOS App 时，请允许本地网络访问。
+The iOS app uses the same LAN protocol as the Windows app: UDP peer discovery plus HTTP endpoints for messages and files. Windows PCs and iPhone/iPad devices can transfer messages and files when they are on the same Wi-Fi network. Allow Local Network access the first time the iOS app runs.
 
-## Android 适配版
+## Android Port
 
-Android 版本在 `AirBridgeAndroid` 文件夹中，是额外的原生 Android 工程：
+The Android version lives in the `AirBridgeAndroid` folder as a separate native Android project:
 
 ```text
 AirBridgeAndroid
 ```
 
-用 Android Studio 打开该文件夹，连接安卓手机并开启 USB 调试后即可运行。Android 版同样使用 AirBridge 的 UDP/HTTP 局域网协议，可与 Windows、iOS、macOS 互传消息和文件。它也会扫描当前网段和相邻网段的 `8765-8767` 端口，适合学校网络里广播不互通的情况。
+Open the folder in Android Studio, connect an Android phone with USB debugging enabled, and run the app. The Android app uses the same UDP/HTTP protocol and can exchange messages and files with Windows, iOS, and macOS devices.
 
-生成 Android 源码包：
+It also scans the current and adjacent network segments on ports `8765-8767`, which is useful on school or office networks where broadcast discovery does not cross segments.
+
+Generate the Android source package:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\build_android_zip.ps1
 ```
 
-输出文件：
+Output:
 
 ```text
 dist\AirBridgeAndroid-source.zip
 ```
 
-## macOS 适配版
+## macOS Port
 
-Mac 版本在 `AirBridgeMac` 文件夹中，也是额外的原生 SwiftUI 工程。
+The macOS version lives in the `AirBridgeMac` folder as a separate native SwiftUI project:
 
 ```text
 AirBridgeMac\AirBridgeMac.xcodeproj
 ```
 
-macOS 版同样使用 AirBridge 的 UDP/HTTP 局域网协议，可与 Windows、iPhone/iPad、Mac 互传。收到的文件默认保存到：
+The macOS app uses the same UDP/HTTP protocol and can transfer with Windows, iPhone/iPad, Android, and other Macs. Received files are saved by default to:
 
 ```text
 ~/Downloads/AirBridge Received
 ```
 
-## 协议
+## Protocol
 
-AirBridge 的局域网发现和传输协议见：
+The local-network discovery and transfer protocol is documented in:
 
 ```text
 docs\PROTOCOL.md
 ```
 
-## 开源协议
+The short version:
 
-AirBridge 使用 MIT License 开源。
+- UDP discovery on port `45678`.
+- HTTP app server on the local device.
+- Message and file transfer endpoints under `/api`.
+- Manual peer entry as a fallback when discovery is blocked.
 
-## 网络和安全说明
+## Network and Security Notes
 
-AirBridge 设计为可信局域网内使用。它不会上传到云端，也不会要求登录。第一次运行时，Windows 防火墙可能会询问是否允许访问网络；如果要让其他设备访问，请允许专用网络访问。
+AirBridge is designed for trusted local networks. It does not upload files to the cloud and does not require login. On first run, Windows Firewall may ask whether to allow network access. To receive files from other devices on your LAN, allow access on private networks.
 
-不要在不可信公共 Wi-Fi 中接收陌生设备文件。
+Do not accept files from unknown devices on untrusted public Wi-Fi.
+
+## License
+
+AirBridge is released under the MIT License.
