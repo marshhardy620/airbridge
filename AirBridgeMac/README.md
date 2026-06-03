@@ -1,34 +1,34 @@
 # AirBridge macOS
 
-AirBridge macOS 是 AirBridge 的原生 Mac 版本，和 Windows/iOS 版使用同一套局域网协议：
+AirBridge macOS is the native Mac version of AirBridge. It uses the same local-network protocol as the Windows, iOS, and Android versions:
 
-- UDP `45678` 广播发现设备
-- 邻近网段 HTTP 扫描
-- HTTP `/api/state` 获取设备信息
-- HTTP `/api/inbox/message` 收消息
-- HTTP `/api/inbox/file` 收文件
+- UDP `45678` broadcast discovery.
+- Nearby-segment HTTP scanning.
+- HTTP `/api/state` for device information.
+- HTTP `/api/inbox/message` for receiving text messages.
+- HTTP `/api/inbox/file` for receiving files.
 
-## 打开方式
+## Open in Xcode
 
-在 macOS 上用 Xcode 打开：
+On macOS, open the project with Xcode:
 
 ```text
-AirBridgeMac.xcodeproj
+AirBridgeMac\AirBridgeMac.xcodeproj
 ```
 
-选择 `AirBridgeMac` scheme 运行。
+Select the `AirBridgeMac` scheme and run it.
 
-## 文件保存位置
+## Received Files
 
-收到的文件会保存到：
+Received files are saved to:
 
 ```text
 ~/Downloads/AirBridge Received
 ```
 
-## 和 Windows / iOS 互传
+## Transfer with Windows, iOS, or Android
 
-1. Windows 上运行 `AirBridge.exe`
-2. iPhone/iPad 上运行 `AirBridgeIOS`
-3. Mac 上运行 `AirBridgeMac`
-4. 设备在同一个可互访局域网内即可自动发现；如果广播被阻断，可手动输入对方显示的地址。
+1. Run `AirBridge.exe` on Windows.
+2. Run `AirBridgeIOS` on iPhone/iPad, AirBridge Android on Android, or `AirBridgeMac` on Mac.
+3. Connect the devices to the same reachable local network.
+4. Devices should discover each other automatically. If broadcast discovery is blocked, manually enter the address shown by the peer.
