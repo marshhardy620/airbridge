@@ -8,6 +8,8 @@ This project follows a simple public changelog format inspired by Keep a Changel
 
 ### Added
 
+- Android GitHub update checks with APK download and Android installer handoff.
+- Android APK install provider for downloaded update packages.
 - English README and platform-specific README files for Windows, Android, iOS, and macOS workflows.
 - English UI copy across the Windows desktop app, browser-compatible UI, Android app, iOS app, and macOS app.
 - GitHub topics for local-network transfer, cross-platform support, and UDP discovery.
@@ -17,6 +19,7 @@ This project follows a simple public changelog format inspired by Keep a Changel
 
 - Repository description now emphasizes local-network AirDrop-style file and message transfer across Windows, Android, iOS, and macOS.
 - README now links directly to releases, protocol documentation, support, roadmap, contributing, and security docs.
+- Android version is now `0.1.4`; Windows version is now `0.1.4`.
 
 ## 0.1.2
 

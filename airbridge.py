@@ -35,7 +35,7 @@ from urllib.parse import parse_qs, urlparse
 
 
 APP_NAME = "AirBridge"
-APP_VERSION = "0.1.3"
+APP_VERSION = "0.1.4"
 DISCOVERY_PORT = 45678
 PEER_TTL_SECONDS = 20
 MAX_UPLOAD_BYTES = 1024 * 1024 * 1024

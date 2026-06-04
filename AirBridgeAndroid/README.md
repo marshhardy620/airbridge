@@ -30,6 +30,14 @@ dist\AirBridgeAndroid-release.apk
 
 The signing key is stored in `AirBridgeAndroid\signing` and is not committed to GitHub. Do not delete that folder, or future APKs will not be able to update over the installed app.
 
+## GitHub Updates
+
+Starting with `v0.1.4`, the Android app checks GitHub Releases for newer versions on startup. When a newer `AirBridgeAndroid-release.apk` is available, it prompts the user, downloads the APK, and opens Android's installer.
+
+Android does not allow a normal app to silently replace itself. The user must confirm installation, and Android may ask for permission to install unknown apps from AirBridge.
+
+`v0.1.3` and earlier Android builds do not include the updater, so those users need to manually install `v0.1.4` or newer once before future update prompts can work.
+
 ## Transfer with Windows
 
 1. Run `dist\AirBridge.exe` on Windows.
@@ -44,7 +52,7 @@ The Android app sends UDP broadcasts and scans the current and adjacent network 
 Received files are saved in the Android app's external files directory:
 
 ```text
-Android/data/com.airbridge.android/files/AirBridge-Received
+Android/data/com.airbridge.android/files/AirBridge Received
 ```
 
 Some newer Android file managers hide `Android/data`. If that happens, use the received-file list inside AirBridge to confirm the file name.

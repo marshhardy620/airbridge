@@ -1,18 +1,23 @@
 package com.airbridge.android;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.net.Uri;
 import android.net.wifi.WifiManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.provider.OpenableColumns;
+import android.provider.Settings;
 import android.text.InputType;
 import android.text.TextUtils;
 import android.view.Gravity;
@@ -69,16 +74,24 @@ import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends Activity {
     private static final int PICK_FILES_REQUEST = 7001;
+    private static final String APP_VERSION = "0.1.4";
+    private static final String GITHUB_REPO = "MickeyWzt/airbridge";
+    private static final String LATEST_RELEASE_API = "https://api.github.com/repos/" + GITHUB_REPO + "/releases/latest";
+    private static final String RELEASES_URL = "https://github.com/" + GITHUB_REPO + "/releases";
+    private static final String LATEST_RELEASE_URL = RELEASES_URL + "/latest";
 
     private AirBridgeService service;
+    private final ExecutorService updateExecutor = Executors.newSingleThreadExecutor();
     private LinearLayout peerList;
     private LinearLayout eventList;
     private TextView statusText;
     private TextView localUrlText;
+    private Button updateButton;
     private EditText manualInput;
     private EditText messageInput;
     private Button sendMessageButton;
     private Button sendFileButton;
+    private File pendingInstallApk;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -107,6 +120,12 @@ public class MainActivity extends Activity {
         });
         service.start();
         refreshUi();
+        new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                checkForUpdates(false);
+            }
+        }, 2500);
     }
 
     @Override
@@ -114,7 +133,18 @@ public class MainActivity extends Activity {
         if (service != null) {
             service.stop();
         }
+        updateExecutor.shutdownNow();
         super.onDestroy();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (pendingInstallApk != null && canRequestPackageInstalls()) {
+            File apk = pendingInstallApk;
+            pendingInstallApk = null;
+            installDownloadedApk(apk);
+        }
     }
 
     @Override
@@ -171,6 +201,20 @@ public class MainActivity extends Activity {
 
         localUrlText = label("Local address: loading", muted, 14);
         root.addView(localUrlText);
+
+        updateButton = actionButton("Check Updates", Color.rgb(84, 96, 92));
+        updateButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                checkForUpdates(true);
+            }
+        });
+        LinearLayout.LayoutParams updateParams = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                dp(46)
+        );
+        updateParams.setMargins(0, dp(10), 0, 0);
+        root.addView(updateButton, updateParams);
 
         root.addView(sectionTitle("Nearby Devices"));
         peerList = new LinearLayout(this);
@@ -245,6 +289,253 @@ public class MainActivity extends Activity {
         intent.setType("*/*");
         intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
         startActivityForResult(intent, PICK_FILES_REQUEST);
+    }
+
+    private void checkForUpdates(final boolean manual) {
+        if (updateButton != null) {
+            updateButton.setEnabled(false);
+        }
+        if (manual) {
+            statusText.setText("Checking for updates...");
+        }
+        updateExecutor.execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    final UpdateInfo update = fetchLatestUpdate();
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (updateButton != null) {
+                                updateButton.setEnabled(true);
+                            }
+                            if (update == null) {
+                                if (manual) {
+                                    statusText.setText("Already up to date");
+                                }
+                                return;
+                            }
+                            promptUpdate(update);
+                        }
+                    });
+                } catch (final Exception error) {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (updateButton != null) {
+                                updateButton.setEnabled(true);
+                            }
+                            if (manual) {
+                                statusText.setText("Update check failed: " + error.getMessage());
+                            }
+                        }
+                    });
+                }
+            }
+        });
+    }
+
+    private UpdateInfo fetchLatestUpdate() throws IOException, JSONException {
+        HttpURLConnection conn = (HttpURLConnection) new URL(LATEST_RELEASE_API).openConnection();
+        conn.setConnectTimeout(8000);
+        conn.setReadTimeout(8000);
+        conn.setRequestProperty("User-Agent", "AirBridge-Android/" + APP_VERSION);
+        conn.setRequestProperty("Accept", "application/vnd.github+json");
+        try {
+            int code = conn.getResponseCode();
+            if (code == 403 || code == 429) {
+                return fetchLatestUpdateFromRedirect();
+            }
+            if (code >= 400) {
+                throw new IOException("HTTP " + code);
+            }
+            JSONObject release = new JSONObject(readAll(conn.getInputStream()));
+            String tag = release.optString("tag_name", "");
+            if (!isNewerVersion(tag, APP_VERSION)) {
+                return null;
+            }
+            JSONArray assets = release.optJSONArray("assets");
+            String apkUrl = "";
+            if (assets != null) {
+                for (int i = 0; i < assets.length(); i++) {
+                    JSONObject asset = assets.optJSONObject(i);
+                    if (asset != null && "AirBridgeAndroid-release.apk".equals(asset.optString("name"))) {
+                        apkUrl = asset.optString("browser_download_url", "");
+                        break;
+                    }
+                }
+            }
+            if (apkUrl.length() == 0) {
+                throw new IOException("Latest release has no Android APK");
+            }
+            return new UpdateInfo(tag, release.optString("name", "AirBridge " + tag), release.optString("html_url", RELEASES_URL), apkUrl);
+        } finally {
+            conn.disconnect();
+        }
+    }
+
+    private UpdateInfo fetchLatestUpdateFromRedirect() throws IOException {
+        HttpURLConnection conn = (HttpURLConnection) new URL(LATEST_RELEASE_URL).openConnection();
+        conn.setConnectTimeout(8000);
+        conn.setReadTimeout(8000);
+        conn.setInstanceFollowRedirects(true);
+        conn.setRequestProperty("User-Agent", "AirBridge-Android/" + APP_VERSION);
+        try {
+            conn.getResponseCode();
+            String finalUrl = conn.getURL().toString();
+            String tag = finalUrl.replaceAll("/+$", "").substring(finalUrl.replaceAll("/+$", "").lastIndexOf('/') + 1);
+            if (tag.length() == 0 || "latest".equals(tag) || !isNewerVersion(tag, APP_VERSION)) {
+                return null;
+            }
+            return new UpdateInfo(
+                    tag,
+                    "AirBridge " + tag,
+                    RELEASES_URL + "/tag/" + tag,
+                    "https://github.com/" + GITHUB_REPO + "/releases/download/" + tag + "/AirBridgeAndroid-release.apk"
+            );
+        } finally {
+            conn.disconnect();
+        }
+    }
+
+    private void promptUpdate(final UpdateInfo update) {
+        new AlertDialog.Builder(this)
+                .setTitle("New version available")
+                .setMessage("AirBridge " + update.tag + " is available.\nCurrent version: v" + APP_VERSION + "\n\nDownload and install it now?")
+                .setPositiveButton("Download", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        downloadUpdate(update);
+                    }
+                })
+                .setNegativeButton("Later", null)
+                .show();
+    }
+
+    private void downloadUpdate(final UpdateInfo update) {
+        statusText.setText("Downloading " + update.tag + "...");
+        if (updateButton != null) {
+            updateButton.setEnabled(false);
+        }
+        updateExecutor.execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    File updatesDir = new File(getCacheDir(), "updates");
+                    if (!updatesDir.exists()) {
+                        updatesDir.mkdirs();
+                    }
+                    final File apk = new File(updatesDir, "AirBridgeAndroid-" + update.tag + ".apk");
+                    downloadFile(update.apkUrl, apk);
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (updateButton != null) {
+                                updateButton.setEnabled(true);
+                            }
+                            promptInstall(apk);
+                        }
+                    });
+                } catch (final Exception error) {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (updateButton != null) {
+                                updateButton.setEnabled(true);
+                            }
+                            statusText.setText("Download failed: " + error.getMessage());
+                        }
+                    });
+                }
+            }
+        });
+    }
+
+    private void promptInstall(final File apk) {
+        new AlertDialog.Builder(this)
+                .setTitle("Update downloaded")
+                .setMessage("The update has been downloaded. Android will ask you to confirm installation.")
+                .setPositiveButton("Install", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        installDownloadedApk(apk);
+                    }
+                })
+                .setNegativeButton("Later", null)
+                .show();
+    }
+
+    private void installDownloadedApk(File apk) {
+        if (!apk.exists()) {
+            statusText.setText("Downloaded APK not found");
+            return;
+        }
+        if (!canRequestPackageInstalls()) {
+            pendingInstallApk = apk;
+            new AlertDialog.Builder(this)
+                    .setTitle("Permission required")
+                    .setMessage("Allow AirBridge to install unknown apps, then return here to continue installing the update.")
+                    .setPositiveButton("Open Settings", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            openInstallPermissionSettings();
+                        }
+                    })
+                    .setNegativeButton("Cancel", null)
+                    .show();
+            return;
+        }
+        Uri uri = Uri.parse("content://" + getPackageName() + ".apkprovider/update/" + apk.getName());
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        intent.setDataAndType(uri, "application/vnd.android.package-archive");
+        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
+    }
+
+    private boolean canRequestPackageInstalls() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+            return true;
+        }
+        PackageManager packageManager = getPackageManager();
+        return packageManager.canRequestPackageInstalls();
+    }
+
+    private void openInstallPermissionSettings() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            Intent intent = new Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES);
+            intent.setData(Uri.parse("package:" + getPackageName()));
+            startActivity(intent);
+        }
+    }
+
+    private void downloadFile(String url, File destination) throws IOException {
+        File part = new File(destination.getParentFile(), destination.getName() + ".part");
+        HttpURLConnection conn = (HttpURLConnection) new URL(url).openConnection();
+        conn.setConnectTimeout(15000);
+        conn.setReadTimeout(60000);
+        conn.setRequestProperty("User-Agent", "AirBridge-Android/" + APP_VERSION);
+        try {
+            int code = conn.getResponseCode();
+            if (code >= 400) {
+                throw new IOException("HTTP " + code);
+            }
+            try (InputStream input = conn.getInputStream(); OutputStream output = new FileOutputStream(part)) {
+                byte[] buffer = new byte[256 * 1024];
+                int count;
+                while ((count = input.read(buffer)) != -1) {
+                    output.write(buffer, 0, count);
+                }
+            }
+            if (destination.exists() && !destination.delete()) {
+                throw new IOException("Could not replace old download");
+            }
+            if (!part.renameTo(destination)) {
+                throw new IOException("Could not finalize download");
+            }
+        } finally {
+            conn.disconnect();
+        }
     }
 
     private void refreshUi() {
@@ -335,6 +626,65 @@ public class MainActivity extends Activity {
         return Math.round(value * getResources().getDisplayMetrics().density);
     }
 
+    private static boolean isNewerVersion(String remote, String current) {
+        int[] remoteParts = versionParts(remote);
+        int[] currentParts = versionParts(current);
+        int length = Math.max(remoteParts.length, currentParts.length);
+        for (int i = 0; i < length; i++) {
+            int remotePart = i < remoteParts.length ? remoteParts[i] : 0;
+            int currentPart = i < currentParts.length ? currentParts[i] : 0;
+            if (remotePart != currentPart) {
+                return remotePart > currentPart;
+            }
+        }
+        return false;
+    }
+
+    private static int[] versionParts(String value) {
+        String clean = value == null ? "" : value.trim().replaceFirst("^[vV]", "");
+        if (clean.length() == 0) {
+            return new int[]{0};
+        }
+        String[] rawParts = clean.split("\\.");
+        int[] parts = new int[rawParts.length];
+        for (int i = 0; i < rawParts.length; i++) {
+            StringBuilder digits = new StringBuilder();
+            for (int j = 0; j < rawParts[i].length(); j++) {
+                char ch = rawParts[i].charAt(j);
+                if (!Character.isDigit(ch)) {
+                    break;
+                }
+                digits.append(ch);
+            }
+            parts[i] = digits.length() == 0 ? 0 : Integer.parseInt(digits.toString());
+        }
+        return parts;
+    }
+
+    private static String readAll(InputStream input) throws IOException {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        byte[] buffer = new byte[8192];
+        int count;
+        while ((count = input.read(buffer)) != -1) {
+            out.write(buffer, 0, count);
+        }
+        return out.toString("UTF-8");
+    }
+
+    private static final class UpdateInfo {
+        final String tag;
+        final String name;
+        final String pageUrl;
+        final String apkUrl;
+
+        UpdateInfo(String tag, String name, String pageUrl, String apkUrl) {
+            this.tag = tag;
+            this.name = name;
+            this.pageUrl = pageUrl;
+            this.apkUrl = apkUrl;
+        }
+    }
+
     private static final class AirBridgeService {
         interface Callback {
             void onChanged();
@@ -342,7 +692,7 @@ public class MainActivity extends Activity {
         }
 
         private static final String APP_NAME = "AirBridge";
-        private static final String APP_VERSION = "0.1.3";
+        private static final String APP_VERSION = MainActivity.APP_VERSION;
         private static final int DISCOVERY_PORT = 45678;
         private static final int PREFERRED_HTTP_PORT = 8765;
         private static final long PEER_TTL_MS = 20_000;

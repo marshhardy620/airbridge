@@ -47,6 +47,7 @@ If you want to run from source or work on the project, continue with the section
 - Automatic peer discovery on the same LAN and nearby network segments.
 - Manual peer entry for networks where broadcast discovery is blocked by routers or firewalls.
 - Windows desktop auto-update support through GitHub Releases.
+- Android GitHub update checks with APK download and install prompts.
 - Text message sending.
 - Drag-and-drop or file-picker based file transfer.
 - Tray icon and receive notifications.
@@ -151,6 +152,10 @@ When a newer version is available, the app prompts the user, downloads the new `
 
 Note: `v0.1.1` and earlier builds do not include the updater. Users on those versions need to manually download `v0.1.2` or newer once before future updates can be prompted automatically.
 
+The Android app supports GitHub update checks starting with `v0.1.4`. On startup, it checks the latest GitHub Release, prompts when a newer APK is available, downloads `AirBridgeAndroid-release.apk`, and opens the Android installer. Android requires the user to confirm installation and may ask for "install unknown apps" permission.
+
+Note: `v0.1.3` and earlier Android builds do not include the updater. Android users need to manually install `v0.1.4` or newer once before future APK updates can be prompted automatically.
+
 ## iOS Port
 
 The iPhone/iPad version lives in the `AirBridgeIOS` folder as a separate native SwiftUI project:
@@ -172,6 +177,8 @@ AirBridgeAndroid
 Open the folder in Android Studio, connect an Android phone with USB debugging enabled, and run the app. The Android app uses the same UDP/HTTP protocol and can exchange messages and files with Windows, iOS, and macOS devices.
 
 It also scans the current and adjacent network segments on ports `8765-8767`, which is useful on school or office networks where broadcast discovery does not cross segments.
+
+Starting with `v0.1.4`, the Android app can check GitHub Releases for newer APKs and prompt the user to download and install them.
 
 Generate the Android release APK:
 
