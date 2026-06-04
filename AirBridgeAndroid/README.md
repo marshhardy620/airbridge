@@ -14,6 +14,22 @@ AirBridge Android is the mobile Android port of AirBridge. It uses the same loca
 3. Connect an Android phone and enable USB debugging.
 4. Select the physical device and click Run.
 
+## Build APK
+
+From the repository root, run:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\build_android_release_apk.ps1
+```
+
+The script creates a local Android release signing key and outputs:
+
+```text
+dist\AirBridgeAndroid-release.apk
+```
+
+The signing key is stored in `AirBridgeAndroid\signing` and is not committed to GitHub. Do not delete that folder, or future APKs will not be able to update over the installed app.
+
 ## Transfer with Windows
 
 1. Run `dist\AirBridge.exe` on Windows.

@@ -11,19 +11,14 @@ if (Test-Path $PackageDir) {
 }
 New-Item -ItemType Directory -Force -Path $PackageDir | Out-Null
 
-$ExcludeDirs = @(".gradle", "build", ".idea")
+$ExcludeDirs = @(".gradle", "build", ".idea", "signing")
 Get-ChildItem -Path $Source -Recurse -Force | ForEach-Object {
     $relative = $_.FullName.Substring($Source.Length).TrimStart("\", "/")
     if (-not $relative) {
         return
     }
-    $skip = $false
-    foreach ($exclude in $ExcludeDirs) {
-        if ($relative -eq $exclude -or $relative.StartsWith("$exclude\")) {
-            $skip = $true
-            break
-        }
-    }
+    $parts = $relative -split "[\\/]+"
+    $skip = ($parts | Where-Object { $ExcludeDirs -contains $_ } | Select-Object -First 1) -ne $null
     if ($skip) {
         return
     }

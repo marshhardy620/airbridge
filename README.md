@@ -173,6 +173,18 @@ Open the folder in Android Studio, connect an Android phone with USB debugging e
 
 It also scans the current and adjacent network segments on ports `8765-8767`, which is useful on school or office networks where broadcast discovery does not cross segments.
 
+Generate the Android release APK:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\build_android_release_apk.ps1
+```
+
+Output:
+
+```text
+dist\AirBridgeAndroid-release.apk
+```
+
 Generate the Android source package:
 
 ```powershell

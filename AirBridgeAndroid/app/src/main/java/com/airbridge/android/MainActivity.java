@@ -342,7 +342,7 @@ public class MainActivity extends Activity {
         }
 
         private static final String APP_NAME = "AirBridge";
-        private static final String APP_VERSION = "0.1.0";
+        private static final String APP_VERSION = "0.1.3";
         private static final int DISCOVERY_PORT = 45678;
         private static final int PREFERRED_HTTP_PORT = 8765;
         private static final long PEER_TTL_MS = 20_000;

@@ -27,6 +27,9 @@ xcuserdata/
 .gradle/
 **/build/
 local.properties
+AirBridgeAndroid/signing/
+*.jks
+*.keystore
 
 # IDE/editor
 .idea/
